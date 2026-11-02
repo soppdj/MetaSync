@@ -1,7 +1,8 @@
 # MASTER PROMPT & ARSITEKTUR SISTEM: METASYNC BY FATHERLAB
-> **Versi Dokumen:** 1.6.1  
+> **Versi Dokumen:** 1.6.2  
 > **Terakhir Diperbarui:** 2 November 2026  
 > **Author & Brand:** FatherLab (Sopianto Djahar)  
+> **Repository GitHub:** [https://github.com/soppdj/MetaSync](https://github.com/soppdj/MetaSync)  
 > **Status Sistem:** `metagraph live` (Meta Marketing Graph API v20.0 • Supabase Live • Sentinel Active)  
 > **Target Platform:** Desktop-Optimized Progressive Web Application (PWA)
 
@@ -325,6 +326,7 @@ CREATE TABLE IF NOT EXISTS report_ledger (
 | **v1.5.1** | 02 Nov 2026 | User Request | Penambahan 3 kolom baru pada tabel MetaSync (`MetaSyncTable.vue`) tepat di sebelah kolom Spend: **RESULT** (Total pesanan/orders), **VALUE** (Conversion Value/omset kotor IDR), dan **ROAS** (Return on Ad Spend dengan badge FIRE/PROFIT/LOW), lengkap dengan kalkulasi agregat di baris summary footer. |
 | **v1.6.0** | 02 Nov 2026 | User Request | Penambahan instrumen ke-5 **Landing Page Builder (LP Builder)** pada menu Content Studio (`HypnowritingStudio.vue`): Terhubung langsung dengan hasil Persona Audience, Value Proposition Canvas (VPC), dan naskah Hypnowriting via fitur 1-klik "⚡ Tarik Data Riset". Dilengkapi strategi *Hook Mematikan*, mode tampilan ganda (*Naskah Copywriting Markdown* & *Visual Mockup Preview* responsive Mobile/Desktop), serta fitur ekspor/download file HTML mandiri (`.html`) siap pasang ke Berdu, OrderOnline, Elementor, atau WordPress. |
 | **v1.6.1** | 02 Nov 2026 | User Request | Penyederhanaan label judul pada modal Integrasi & API Keys (`SettingsModal.vue`): Membersihkan label tambahan menjadi `1. Supabase`, `2. Meta Graph API`, `3. Telegram Bot`, dan `4. Google Gemini API`. |
+| **v1.6.2** | 02 Nov 2026 | User Request | Migrasi & publikasi repositori resmi ke GitHub (https://github.com/soppdj/MetaSync). Konfigurasi proteksi privasi zero-leakage via .gitignore (mengabaikan .env*, node_modules, backup data), sinkronisasi branch main, dan dokumentasi .env.example. |
 
 ---
 
