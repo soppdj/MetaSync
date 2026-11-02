@@ -1,0 +1,17 @@
+{
+  "name": "MetaSync by FatherLab",
+  "short_name": "MetaSync",
+  "description": "Desktop-Optimized PWA for Meta Ads Management, Analytics, and Creative Studio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
