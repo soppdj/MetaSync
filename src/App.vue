@@ -175,6 +175,7 @@ const showToast = (message, type = 'info') => {
 const handleLoginSuccess = (user) => {
   showToast(`Selamat datang, ${user?.name || 'Commander'}! Sesi Admin Aktif.`, 'success');
   fetchCampaigns();
+  handleSync();
 };
 
 // Lock Terminal Action (Logout)
@@ -265,6 +266,9 @@ const handleSaveSettings = (config) => {
   showSettingsModal.value = false;
   showToast('Konfigurasi API Keys dan Password Admin berhasil disimpan!', 'success');
   fetchCampaigns();
+  if (config.metaToken && config.metaAccount) {
+    handleSync();
+  }
 };
 
 // Save Hypnowriting Log to Supabase (hypnowriting_logs)

@@ -20,7 +20,7 @@ const supabaseKey = ref(localStorage.getItem(STORAGE_KEYS.KEY) || import.meta.en
 
 let supabaseInstance = null;
 
-function getSupabaseClient() {
+export function getSupabaseClient() {
   if (!supabaseUrl.value || !supabaseKey.value) {
     return null;
   }
@@ -283,6 +283,7 @@ export function useSupabase() {
     saveHypnowritingLog,
     saveCopywritingLog,
     updateSettings,
-    getSavedSettings
+    getSavedSettings,
+    getSupabaseClient
   };
 }

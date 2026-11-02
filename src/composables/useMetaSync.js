@@ -1,11 +1,12 @@
 // src/composables/useMetaSync.js
 import { ref, onMounted, onUnmounted } from 'vue';
+import { fetchDirectMetaSync } from '../utils/metaApi';
 
 const isSyncing = ref(false);
 const lastSyncedAt = ref(localStorage.getItem('metasync_last_synced') || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB');
 const syncMessage = ref('');
 const syncStatus = ref('idle'); // 'idle' | 'success' | 'error'
-const syncMode = ref('SIMULATION_DEMO');
+const syncMode = ref(localStorage.getItem('metasync_meta_token') ? 'LIVE_META_API' : 'SIMULATION_DEMO');
 const accountId = ref(localStorage.getItem('metasync_meta_account') || 'act_fatherlab_live_01');
 
 // Real-Time Polling & Countdown Controls
@@ -18,7 +19,7 @@ const syncLogs = ref([
   {
     time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     type: 'SYSTEM',
-    message: 'Meta Marketing Graph API v20.0 Telemetry Stream Initialized'
+    message: 'Meta Marketing Graph API v21.0 Dual-Engine Telemetry Stream Initialized'
   }
 ]);
 
@@ -29,7 +30,7 @@ export function useMetaSync(onSyncSuccess) {
   const addLog = (message, type = 'SYNC') => {
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     syncLogs.value.unshift({ time, type, message });
-    if (syncLogs.value.length > 25) {
+    if (syncLogs.value.length > 30) {
       syncLogs.value.pop();
     }
   };
@@ -39,82 +40,106 @@ export function useMetaSync(onSyncSuccess) {
 
     isSyncing.value = true;
     syncStatus.value = 'idle';
-    syncMessage.value = 'Menghubungkan ke Meta Graph API & Supabase...';
+    syncMessage.value = 'Menghubungkan ke Meta Graph API v21.0...';
 
     const savedToken = localStorage.getItem('metasync_meta_token') || '';
     const savedAccount = localStorage.getItem('metasync_meta_account') || '';
 
-    try {
-      const response = await fetch('/api/sync-meta', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'sync',
-          metaToken: savedToken,
-          metaAccount: savedAccount
-        })
-      });
+    let successData = null;
 
-      if (!response.ok) {
-        throw new Error(`Sync server responded with ${response.status}`);
+    // 1. JIKA ADA KREDENSIAL META, JALANKAN DIRECT BROWSER-TO-META GRAPH v21.0 (CORS SUPPORTED)
+    if (savedToken && savedAccount) {
+      try {
+        addLog(`Menghubungkan ke Meta Graph API v21.0 (${savedAccount})...`, 'NETWORK');
+        // Direct browser client fetch (Paling responsif & tidak butuh serverless node)
+        successData = await fetchDirectMetaSync(savedToken, savedAccount);
+        addLog(`Meta Graph sync live berhasil! ${successData.recordsProcessed || 0} unit telemetri termutakhir.`, 'SUCCESS');
+      } catch (directErr) {
+        console.warn('Direct Meta sync error, mencoba serverless fallback:', directErr);
+        // Fallback coba serverless function jika tersedia
+        try {
+          const response = await fetch('/api/sync-meta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'sync',
+              metaToken: savedToken,
+              metaAccount: savedAccount
+            })
+          });
+          if (response.ok) {
+            successData = await response.json();
+            addLog(`Meta sync via Serverless Function berhasil!`, 'SUCCESS');
+          }
+        } catch (srvErr) {
+          console.warn('Serverless sync failed as well:', srvErr);
+        }
       }
+    }
 
-      const data = await response.json();
+    // 2. EVALUASI HASIL SINKRONISASI
+    if (successData) {
       const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
       lastSyncedAt.value = timeStr;
       localStorage.setItem('metasync_last_synced', timeStr);
       syncStatus.value = 'success';
-      syncMode.value = data.mode || (savedToken ? 'LIVE_META_API' : 'SIMULATION_DEMO');
-      accountId.value = data.account_id || savedAccount || 'act_fatherlab_live_01';
-      syncMessage.value = `Sinkronisasi berhasil (${data.recordsProcessed || 2} unit telemetri termutakhir)`;
-
-      addLog(`Sinkronisasi sukses: ${data.recordsProcessed || 4} adset diperbarui. Mode: ${syncMode.value}`);
-
+      syncMode.value = successData.mode || 'LIVE_META_API';
+      accountId.value = successData.account_id || savedAccount;
+      syncMessage.value = `Sinkronisasi live Meta berhasil (${successData.recordsProcessed || 0} records)`;
+      
       if (onSyncSuccess) {
-        onSyncSuccess(data);
+        onSyncSuccess(successData);
       }
-    } catch (err) {
-      console.warn('Sync API unreachable, applying local simulated telemetry tick:', err);
-      setTimeout(() => {
-        const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
-        lastSyncedAt.value = timeStr;
-        syncStatus.value = 'success';
-        syncMode.value = 'SIMULATION_DEMO';
-        syncMessage.value = 'Telemetri real-time diperbarui (Simulation)';
-        addLog('Telemetri real-time diperbarui secara lokal (Traffic Pulse Sync)');
-        if (onSyncSuccess) onSyncSuccess({ mode: 'SIMULATION_DEMO', recordsProcessed: 4 });
-      }, 500);
-    } finally {
-      setTimeout(() => {
-        isSyncing.value = false;
-        countdown.value = autoSyncInterval.value;
-      }, 600);
+    } else {
+      // Simulation Fallback (Jika token belum diisi atau akun belum siap)
+      const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+      lastSyncedAt.value = timeStr;
+      syncStatus.value = 'success';
+      syncMode.value = savedToken ? 'LIVE_META_API (OFFLINE)' : 'SIMULATION_DEMO';
+      syncMessage.value = savedToken ? 'Gagal terhubung ke Meta (periksa token di Settings)' : 'Telemetri real-time (Mode Simulasi Demo)';
+      
+      addLog(
+        savedToken 
+          ? 'Gagal terhubung ke Meta Graph API. Periksa token & Ad Account ID di menu Settings!' 
+          : 'Telemetri berjalan dalam mode demo simulasi (Masukkan kredensial Meta di Settings untuk Live)', 
+        savedToken ? 'WARN' : 'INFO'
+      );
+      
+      if (onSyncSuccess) {
+        onSyncSuccess({ mode: syncMode.value, recordsProcessed: 4 });
+      }
     }
+
+    setTimeout(() => {
+      isSyncing.value = false;
+      countdown.value = autoSyncInterval.value;
+    }, 600);
   };
 
-  // Toggle Campaign Status on Meta
+  // Toggle Campaign Status on Meta (Direct Graph API v21.0)
   const toggleCampaignStatusOnMeta = async (campaignId, newStatus) => {
-    addLog(`Mengirim instruksi Meta Graph: ${newStatus} untuk campaign ${campaignId}...`, 'ACTION');
+    addLog(`Mengirim instruksi status: ${newStatus} untuk campaign ${campaignId}...`, 'ACTION');
     const savedToken = localStorage.getItem('metasync_meta_token') || '';
-    try {
-      const res = await fetch('/api/sync-meta', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'toggle_campaign_status',
-          campaignId,
-          newStatus,
-          metaToken: savedToken
-        })
-      });
-      const data = await res.json();
-      addLog(`Campaign ${campaignId} kini [${newStatus}] di Meta Graph API.`, 'SUCCESS');
-      return data;
-    } catch (e) {
-      console.error(e);
-      addLog(`Campaign ${campaignId} status diubah lokal ke [${newStatus}].`, 'INFO');
-      return { success: true, localOnly: true };
+    
+    if (savedToken && !campaignId.startsWith('cmp_')) {
+      try {
+        const updateUrl = `https://graph.facebook.com/v21.0/${campaignId}?status=${newStatus}&access_token=${savedToken}`;
+        const updateRes = await fetch(updateUrl, { method: 'POST' });
+        const updateJson = await updateRes.json();
+        
+        if (updateJson.error) {
+          throw new Error(updateJson.error.message);
+        }
+        
+        addLog(`Campaign ${campaignId} kini [${newStatus}] di Meta Ads Manager.`, 'SUCCESS');
+        return { success: true, mode: 'LIVE_META_API' };
+      } catch (err) {
+        addLog(`Gagal kirim update ke Meta Graph: ${err.message}`, 'WARN');
+      }
     }
+
+    addLog(`Campaign ${campaignId} status diubah lokal ke [${newStatus}].`, 'INFO');
+    return { success: true, localOnly: true };
   };
 
   // Interval setter

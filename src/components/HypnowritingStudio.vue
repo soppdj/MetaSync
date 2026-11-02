@@ -1089,6 +1089,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { generateGeminiDirect } from '../utils/geminiClient';
 import { 
   Users, 
   FileText, 
@@ -1350,6 +1351,7 @@ const runGenerateStream = async () => {
     payload = { ...payload, ...formLpBuilder.value };
   }
 
+    let streamWorked = false;
   try {
     const response = await fetch('/api/generate-copy', {
       method: 'POST',
@@ -1357,38 +1359,56 @@ const runGenerateStream = async () => {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      throw new Error(`Edge Function responded with status ${response.status}`);
-    }
+    if (response.ok) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        outputs.value[toolKey] += chunk;
 
-      const chunk = decoder.decode(value, { stream: true });
-      outputs.value[toolKey] += chunk;
-
-      if (streamContainerRef.value) {
-        streamContainerRef.value.scrollTop = streamContainerRef.value.scrollHeight;
+        if (streamContainerRef.value) {
+          streamContainerRef.value.scrollTop = streamContainerRef.value.scrollHeight;
+        }
       }
+      streamWorked = true;
     }
+  } catch (err) {
+    console.warn('Serverless endpoint unavailable, trying direct client fallback:', err);
+  }
 
+  // Client-side fallback if serverless /api/generate-copy returned 404 or failed
+  if (!streamWorked) {
+    const savedKey = localStorage.getItem('metasync_gemini_key') || '';
+    if (savedKey) {
+      try {
+        await generateGeminiDirect(payload, savedKey, (chunk) => {
+          outputs.value[toolKey] += chunk;
+          if (streamContainerRef.value) {
+            streamContainerRef.value.scrollTop = streamContainerRef.value.scrollHeight;
+          }
+        });
+        streamWorked = true;
+      } catch (directErr) {
+        outputs.value[toolKey] += `\n\n[Gagal terhubung ke Gemini: ${directErr.message}. Periksa API Key di menu Settings]`;
+      }
+    } else {
+      outputs.value[toolKey] += "\n\n[Google Gemini API Key belum dimasukkan. Buka menu Settings (Integrasi) untuk memasukkan API Key Anda]";
+    }
+  }
+
+  if (streamWorked) {
     savedStatus.value = true;
     emit('save-log', {
       prompt_context: payload,
       generated_text: outputs.value[toolKey],
       framework: activeToolTitle.value
     });
-
-  } catch (err) {
-    console.error('Generation error:', err);
-    outputs.value[toolKey] += `\n\n[Terjadi gangguan koneksi: ${err.message}]`;
-  } finally {
-    isGenerating.value = false;
   }
+  isGenerating.value = false;
 };
 
 const copyOutput = async () => {
