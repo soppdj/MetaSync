@@ -51,6 +51,13 @@
         <!-- KOTAK MERAH KANAN: Actions & Sync -->
         <div class="flex items-center gap-2.5 shrink-0">
           
+          <!-- Admin Status Indicator Badge -->
+          <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-dark-900 border border-cyan-500/30 text-[11px] font-mono text-cyan-300">
+            <ShieldCheck class="w-3.5 h-3.5 text-cyan-400" />
+            <span class="tracking-wider">{{ currentUser?.username?.toUpperCase() || 'ADMIN' }}</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-glow-teal"></span>
+          </div>
+
           <!-- Waktu Terakhir Sync -->
           <div class="hidden md:flex flex-col text-right">
             <span class="text-[9px] uppercase font-bold tracking-wider text-slate-500 font-mono">Terakhir Sync</span>
@@ -94,9 +101,18 @@
           <button
             @click="$emit('open-settings')"
             class="flex items-center justify-center p-2 bg-dark-900 text-slate-400 hover:text-white hover:bg-dark-850 border border-dark-750 hover:border-cyan-500/40 transition-all"
-            title="Konfigurasi API (Supabase, Meta, Gemini, Telegram)"
+            title="Konfigurasi API (Supabase, Meta, Gemini, Telegram, Admin Password)"
           >
             <Settings class="w-4 h-4" />
+          </button>
+
+          <!-- Tombol Kunci Terminal / Logout -->
+          <button
+            @click="$emit('lock-terminal')"
+            class="flex items-center justify-center p-2 bg-dark-900 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 border border-dark-750 hover:border-rose-500/40 transition-all group"
+            title="Kunci Terminal & Logout (Kembali ke Login UI)"
+          >
+            <Lock class="w-4 h-4 group-hover:scale-110 transition-transform text-rose-400/80 group-hover:text-rose-400" />
           </button>
         </div>
 
@@ -137,7 +153,8 @@ import {
   RefreshCw, 
   PlusCircle, 
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  Lock
 } from 'lucide-vue-next';
 
 defineProps({
@@ -152,10 +169,14 @@ defineProps({
   lastSyncedAt: {
     type: String,
     default: '-'
+  },
+  currentUser: {
+    type: Object,
+    default: () => ({ username: 'admin', role: 'SUPER_ADMIN' })
   }
 });
 
-defineEmits(['update:activeTab', 'trigger-sync', 'open-create-modal', 'open-settings', 'open-protection-modal']);
+defineEmits(['update:activeTab', 'trigger-sync', 'open-create-modal', 'open-settings', 'open-protection-modal', 'lock-terminal']);
 
 // Tabs navigasi: MetaSync di sebelah MetaLab
 const tabs = [

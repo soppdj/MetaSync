@@ -10,7 +10,7 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-white">Integrasi & API Keys</h2>
-            <p class="text-xs text-slate-400">Kredensial Meta Graph API, Supabase, Telegram Bot, dan Gemini</p>
+            <p class="text-xs text-slate-400">Kredensial Meta Graph API, Supabase, Telegram Bot, Gemini, dan Password Admin</p>
           </div>
         </div>
         <button 
@@ -138,6 +138,30 @@
           </div>
         </div>
 
+        <!-- 5. Password Khusus Admin Section -->
+        <div class="space-y-3 p-4 rounded-2xl bg-dark-850 border border-dark-750">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+              <KeyRound class="w-4 h-4 text-copper-400" />
+              5. Password Khusus Admin
+            </span>
+            <span class="text-[10px] text-copper-300 font-mono">Terminal Passkey</span>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-slate-400 font-semibold">Kunci Sandi Admin (Terminal Passkey)</label>
+              <span class="text-[10px] text-slate-500">Default: fatherlab2026</span>
+            </div>
+            <input
+              v-model="form.adminPassword"
+              type="text"
+              placeholder="fatherlab2026"
+              class="w-full px-3.5 py-2 rounded-xl bg-dark-800 border border-dark-700 text-cyan-300 font-mono focus:outline-none focus:border-brand-500 font-bold"
+            />
+          </div>
+        </div>
+
         <!-- Actions -->
         <div class="pt-4 border-t border-dark-800 flex items-center justify-between">
           <span class="text-[10px] text-slate-500">Tersimpan aman di LocalStorage & Vercel Environment</span>
@@ -166,7 +190,8 @@
 
 <script setup>
 import { ref } from 'vue';
-import { Settings, X, Database, Facebook, Send, Sparkles } from 'lucide-vue-next';
+import { Settings, X, Database, Facebook, Send, Sparkles, KeyRound } from 'lucide-vue-next';
+import { useAuth } from '../composables/useAuth';
 
 const props = defineProps({
   initialSettings: {
@@ -177,6 +202,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save']);
 
+const { activeMasterPassword } = useAuth();
+
 const form = ref({
   supabaseUrl: props.initialSettings.supabaseUrl || '',
   supabaseKey: props.initialSettings.supabaseKey || '',
@@ -185,6 +212,7 @@ const form = ref({
   telegramToken: props.initialSettings.telegramToken || '',
   telegramChat: props.initialSettings.telegramChat || '',
   geminiKey: props.initialSettings.geminiKey || '',
+  adminPassword: activeMasterPassword.value || 'fatherlab2026'
 });
 
 const handleSave = () => {

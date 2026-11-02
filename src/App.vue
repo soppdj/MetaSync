@@ -1,110 +1,126 @@
 <template>
-  <div class="min-h-screen bg-dark-950 text-slate-100 flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+  <div class="min-h-screen bg-dark-950 text-slate-100 flex flex-col antialiased selection:bg-brand-500 selection:text-white relative">
     
-    <!-- Global Header -->
-    <Header
-      :active-tab="activeTab"
-      :is-syncing="isSyncing"
-      :last-synced-at="lastSyncedAt"
-      @update:active-tab="activeTab = $event"
-      @trigger-sync="handleSync"
-      @open-create-modal="showCreateModal = true"
-      @open-settings="showSettingsModal = true"
-      @open-protection-modal="showProtectionModal = true"
+    <!-- ========================================================
+         LOGIN UI ANIMATIF: PROTOKOL KEAMANAN TERMINAL ADMIN
+         ======================================================== -->
+    <LoginView
+      v-if="!isAuthenticated"
+      @login-success="handleLoginSuccess"
     />
 
-    <!-- Toast Notification Banner -->
-    <div 
-      v-if="toast.visible" 
-      class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border transition-all animate-bounce-subtle"
-      :class="[
-        toast.type === 'danger' 
-          ? 'bg-rose-950/90 text-rose-200 border-rose-500/50' 
-          : toast.type === 'success' 
-            ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500/50' 
-            : 'bg-dark-900/90 text-teal-200 border-brand-500/50'
-      ]"
-    >
-      <span class="w-2.5 h-2.5 rounded-full" :class="toast.type === 'danger' ? 'bg-rose-400' : 'bg-emerald-400'"></span>
-      <span class="text-xs font-bold">{{ toast.message }}</span>
-    </div>
-
-    <!-- Main Content Container (Desktop Optimized) -->
-    <main class="flex-1 max-w-[1720px] w-full mx-auto px-6 py-6">
-      
-      <!-- TAB 1: DASHBOARD (Posisi No 1 - Dikembalikan Seperti Sebelumnya) -->
-      <PerformanceCharts
-        v-if="activeTab === 'dashboard'"
-        :chart-data="historicalChartData"
-      />
-
-      <!-- TAB 2: METALAB (Posisi No 2 - Kanban Lifecycle 3 Tahap) -->
-      <KanbanBoard
-        v-else-if="activeTab === 'metalab'"
-        :campaigns="campaigns"
-        @move-stage="handleMoveStage"
-        @kill-adset="handleKillAdset"
-        @open-create-modal="showCreateModal = true"
-      />
-
-      <!-- TAB 3: METASYNC (Fitur Baru di Sebelah MetaLab - Real-Time Meta Ads KPI Table) -->
-      <MetaSyncTable
-        v-else-if="activeTab === 'metasync'"
-        :campaigns="campaigns"
+    <!-- ========================================================
+         APLIKASI UTAMA METASYNC (DITAMPILKAN SETELAH OTORISASI)
+         ======================================================== -->
+    <template v-else>
+      <!-- Global Header -->
+      <Header
+        :active-tab="activeTab"
+        :is-syncing="isSyncing"
+        :last-synced-at="lastSyncedAt"
+        :current-user="currentUser"
+        @update:active-tab="activeTab = $event"
         @trigger-sync="handleSync"
-        @update-status="handleMoveStage"
-        @pause-adset="handlePauseAdset"
+        @open-create-modal="showCreateModal = true"
         @open-settings="showSettingsModal = true"
+        @open-protection-modal="showProtectionModal = true"
+        @lock-terminal="handleLockTerminal"
       />
 
-      <!-- TAB 4: CREATIVE LEADERBOARD -->
-      <CreativeLeaderboard
-        v-else-if="activeTab === 'leaderboard'"
-        :assets="creativeAssets"
+      <!-- Toast Notification Banner -->
+      <div 
+        v-if="toast.visible" 
+        class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border transition-all animate-bounce-subtle"
+        :class="[
+          toast.type === 'danger' 
+            ? 'bg-rose-950/90 text-rose-200 border-rose-500/50' 
+            : toast.type === 'success' 
+              ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500/50' 
+              : 'bg-dark-900/90 text-teal-200 border-brand-500/50'
+        ]"
+      >
+        <span class="w-2.5 h-2.5 rounded-full" :class="toast.type === 'danger' ? 'bg-rose-400' : 'bg-emerald-400'"></span>
+        <span class="text-xs font-bold">{{ toast.message }}</span>
+      </div>
+
+      <!-- Main Content Container (Desktop Optimized) -->
+      <main class="flex-1 max-w-[1720px] w-full mx-auto px-6 py-6">
+        
+        <!-- TAB 1: DASHBOARD (Posisi No 1 - Dikembalikan Seperti Sebelumnya) -->
+        <PerformanceCharts
+          v-if="activeTab === 'dashboard'"
+          :chart-data="historicalChartData"
+        />
+
+        <!-- TAB 2: METALAB (Posisi No 2 - Kanban Lifecycle 3 Tahap) -->
+        <KanbanBoard
+          v-else-if="activeTab === 'metalab'"
+          :campaigns="campaigns"
+          @move-stage="handleMoveStage"
+          @kill-adset="handleKillAdset"
+          @open-create-modal="showCreateModal = true"
+        />
+
+        <!-- TAB 3: METASYNC (Fitur Baru di Sebelah MetaLab - Real-Time Meta Ads KPI Table) -->
+        <MetaSyncTable
+          v-else-if="activeTab === 'metasync'"
+          :campaigns="campaigns"
+          @trigger-sync="handleSync"
+          @update-status="handleMoveStage"
+          @pause-adset="handlePauseAdset"
+          @open-settings="showSettingsModal = true"
+        />
+
+        <!-- TAB 4: CREATIVE LEADERBOARD -->
+        <CreativeLeaderboard
+          v-else-if="activeTab === 'leaderboard'"
+          :assets="creativeAssets"
+        />
+
+        <!-- TAB 5: CONTENT STUDIO (GEMINI PRO STREAMING) -->
+        <HypnowritingStudio
+          v-else-if="activeTab === 'content-studio' || activeTab === 'hypnowriting'"
+          @save-log="handleSaveLog"
+        />
+
+        <!-- TAB 6: REPORT GENERATOR (FLYER / PDF) -->
+        <ReportGenerator
+          v-else-if="activeTab === 'reports'"
+          :campaigns="campaigns"
+        />
+
+      </main>
+
+      <!-- Modal: Buat Campaign Baru (Wajibkan Harga Jual & HPP) -->
+      <CampaignModal
+        v-if="showCreateModal"
+        @close="showCreateModal = false"
+        @save="handleCreateCampaign"
       />
 
-      <!-- TAB 5: CONTENT STUDIO (GEMINI PRO STREAMING) -->
-      <HypnowritingStudio
-        v-else-if="activeTab === 'content-studio' || activeTab === 'hypnowriting'"
-        @save-log="handleSaveLog"
+      <!-- Modal: Pengaturan API & Integrasi -->
+      <SettingsModal
+        v-if="showSettingsModal"
+        :initial-settings="getSavedSettings()"
+        @close="showSettingsModal = false"
+        @save="handleSaveSettings"
       />
 
-      <!-- TAB 6: REPORT GENERATOR (FLYER / PDF) -->
-      <ReportGenerator
-        v-else-if="activeTab === 'reports'"
-        :campaigns="campaigns"
+      <!-- Modal: Proteksi Integritas Data (Anti-Reset Sentinel) -->
+      <DataProtectionModal
+        v-if="showProtectionModal"
+        @close="showProtectionModal = false"
+        @notify="showToast"
+        @reload-data="fetchCampaigns"
       />
-
-    </main>
-
-    <!-- Modal: Buat Campaign Baru (Wajibkan Harga Jual & HPP) -->
-    <CampaignModal
-      v-if="showCreateModal"
-      @close="showCreateModal = false"
-      @save="handleCreateCampaign"
-    />
-
-    <!-- Modal: Pengaturan API & Integrasi -->
-    <SettingsModal
-      v-if="showSettingsModal"
-      :initial-settings="getSavedSettings()"
-      @close="showSettingsModal = false"
-      @save="handleSaveSettings"
-    />
-
-    <!-- Modal: Proteksi Integritas Data (Anti-Reset Sentinel) -->
-    <DataProtectionModal
-      v-if="showProtectionModal"
-      @close="showProtectionModal = false"
-      @notify="showToast"
-      @reload-data="fetchCampaigns"
-    />
+    </template>
 
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import LoginView from './components/LoginView.vue';
 import Header from './components/Header.vue';
 import PerformanceCharts from './components/PerformanceCharts.vue';
 import KanbanBoard from './components/KanbanBoard.vue';
@@ -117,11 +133,15 @@ import SettingsModal from './components/SettingsModal.vue';
 import DataProtectionModal from './components/DataProtectionModal.vue';
 import { useSupabase } from './composables/useSupabase';
 import { useMetaSync } from './composables/useMetaSync';
+import { useAuth } from './composables/useAuth';
 
 const activeTab = ref('dashboard');
 const showCreateModal = ref(false);
 const showSettingsModal = ref(false);
 const showProtectionModal = ref(false);
+
+// Auth Engine & Status
+const { isAuthenticated, currentUser, logout, updateAdminPassword } = useAuth();
 
 const {
   campaigns,
@@ -149,6 +169,18 @@ const showToast = (message, type = 'info') => {
   setTimeout(() => {
     toast.value.visible = false;
   }, 4000);
+};
+
+// Login Success Callback
+const handleLoginSuccess = (user) => {
+  showToast(`Selamat datang, ${user?.name || 'Commander'}! Sesi Admin Aktif.`, 'success');
+  fetchCampaigns();
+};
+
+// Lock Terminal Action (Logout)
+const handleLockTerminal = () => {
+  logout();
+  showToast('Terminal MetaSync berhasil dikunci. Protokol keamanan aktif.', 'info');
 };
 
 // Refresh Sync Hook
@@ -226,9 +258,12 @@ const handleCreateCampaign = async (newCampData) => {
 
 // Save Settings
 const handleSaveSettings = (config) => {
+  if (config.adminPassword) {
+    updateAdminPassword(config.adminPassword);
+  }
   updateSettings(config);
   showSettingsModal.value = false;
-  showToast('Konfigurasi API Keys dan Supabase berhasil disimpan!', 'success');
+  showToast('Konfigurasi API Keys dan Password Admin berhasil disimpan!', 'success');
   fetchCampaigns();
 };
 
@@ -239,6 +274,8 @@ const handleSaveLog = async (logData) => {
 };
 
 onMounted(() => {
-  fetchCampaigns();
+  if (isAuthenticated.value) {
+    fetchCampaigns();
+  }
 });
 </script>

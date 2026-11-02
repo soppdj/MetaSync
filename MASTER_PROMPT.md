@@ -1,5 +1,5 @@
 # MASTER PROMPT & ARSITEKTUR SISTEM: METASYNC BY FATHERLAB
-> **Versi Dokumen:** 1.6.2  
+> **Versi Dokumen:** 1.7.0  
 > **Terakhir Diperbarui:** 2 November 2026  
 > **Author & Brand:** FatherLab (Sopianto Djahar)  
 > **Repository GitHub:** [https://github.com/soppdj/MetaSync](https://github.com/soppdj/MetaSync)  
@@ -23,6 +23,7 @@
 4. **Content Studio (AI Hypnowriting)**: Generator Buyer Persona, Value Proposition Canvas (VPC), 5 variasi naskah iklan hypnowriting, dan narasi video konten (*Road to 100 Juta Edition*) via Google Gemini 1.5 Pro berkecepatan tinggi dengan arsitektur Edge Streaming.
 5. **Report & Ledger**: Buku besar pencatatan harian terstruktur dengan ekspor dokumen resmi PDF dan infografis flyer visual PNG.
 6. **Data Protection Sentinel**: Proteksi integritas data anti-reset & anti-overwrite yang menjamin data kerja pengguna tidak pernah hilang atau tertimpa saat sinkronisasi maupun refresh.
+7. **Animated Sci-Fi Security Gate & Admin Passkey**: Gerbang otentikasi login animatif dengan orbit telemetri radar HUD, verifikasi passkey khusus admin (default: `fatherlab2026`), audio synthesizer Web Audio API, passkey strength indicator, otorisasi biometrik 1-klik, dan fungsi Kunci Terminal / Logout.
 
 ---
 
@@ -327,6 +328,7 @@ CREATE TABLE IF NOT EXISTS report_ledger (
 | **v1.6.0** | 02 Nov 2026 | User Request | Penambahan instrumen ke-5 **Landing Page Builder (LP Builder)** pada menu Content Studio (`HypnowritingStudio.vue`): Terhubung langsung dengan hasil Persona Audience, Value Proposition Canvas (VPC), dan naskah Hypnowriting via fitur 1-klik "⚡ Tarik Data Riset". Dilengkapi strategi *Hook Mematikan*, mode tampilan ganda (*Naskah Copywriting Markdown* & *Visual Mockup Preview* responsive Mobile/Desktop), serta fitur ekspor/download file HTML mandiri (`.html`) siap pasang ke Berdu, OrderOnline, Elementor, atau WordPress. |
 | **v1.6.1** | 02 Nov 2026 | User Request | Penyederhanaan label judul pada modal Integrasi & API Keys (`SettingsModal.vue`): Membersihkan label tambahan menjadi `1. Supabase`, `2. Meta Graph API`, `3. Telegram Bot`, dan `4. Google Gemini API`. |
 | **v1.6.2** | 02 Nov 2026 | User Request | Migrasi & publikasi repositori resmi ke GitHub (https://github.com/soppdj/MetaSync). Konfigurasi proteksi privasi zero-leakage via .gitignore (mengabaikan .env*, node_modules, backup data), sinkronisasi branch main, dan dokumentasi .env.example. |
+| **v1.7.0** | 02 Nov 2026 | User Request | Pembuatan **Animated Sci-Fi Login UI Terminal (`LoginView.vue`)** & **Password Khusus Admin (`useAuth.js`)**: Dilengkapi orbit HUD telemetri konsentris berputar, sapuan radar 360°, efek audio synthesizer Web Audio API (`cyberAudio.js`), verifikasi password khusus admin (`fatherlab2026` / `admin`), 1-klik biometrik passkey, animasi getar jika salah (cyber-shake), status dekripsi handshake, serta tombol Kunci Terminal (Logout) di Header. |
 
 ---
 
