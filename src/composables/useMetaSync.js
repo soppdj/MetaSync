@@ -23,9 +23,15 @@ const syncLogs = ref([
   }
 ]);
 
+// Central Event Bus for sync callbacks to ensure any trigger updates state everywhere
+const syncListeners = new Set();
+
 let timerInterval = null;
 
 export function useMetaSync(onSyncSuccess) {
+  if (typeof onSyncSuccess === 'function') {
+    syncListeners.add(onSyncSuccess);
+  }
   
   const addLog = (message, type = 'SYNC') => {
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -87,9 +93,13 @@ export function useMetaSync(onSyncSuccess) {
       accountId.value = successData.account_id || savedAccount;
       syncMessage.value = `Sinkronisasi live Meta berhasil (${successData.recordsProcessed || 0} records)`;
       
-      if (onSyncSuccess) {
-        onSyncSuccess(successData);
-      }
+      syncListeners.forEach(listener => {
+        try {
+          listener(successData);
+        } catch (lErr) {
+          console.error('Sync listener callback error:', lErr);
+        }
+      });
     } else {
       // OFFLINE / BELUM TERHUBUNG (Murni data real, tidak menyuntikkan simulasi)
       const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';

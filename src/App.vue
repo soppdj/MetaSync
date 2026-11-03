@@ -50,6 +50,7 @@
         <PerformanceCharts
           v-if="activeTab === 'dashboard'"
           :chart-data="historicalChartData"
+          :campaigns="campaigns"
         />
 
         <!-- TAB 2: METALAB (Posisi No 2 - Kanban Lifecycle 3 Tahap) -->
@@ -149,6 +150,7 @@ const {
   creativeAssets,
   historicalChartData,
   fetchCampaigns,
+  ingestLiveMetaCampaigns,
   createCampaign,
   updateCampaignStatus,
   pauseAdset,
@@ -187,8 +189,13 @@ const handleLockTerminal = () => {
 
 // Refresh Sync Hook
 const { isSyncing, lastSyncedAt, triggerSync } = useMetaSync((syncResult) => {
-  fetchCampaigns();
-  showToast(`Sync Meta Graph API selesai: ${syncResult.recordsProcessed || 2} data metrik termutakhir!`, 'success');
+  if (syncResult?.campaigns && syncResult.campaigns.length > 0) {
+    ingestLiveMetaCampaigns(syncResult.campaigns);
+    showToast(`✓ Berhasil memuat ${syncResult.campaigns.length} kampanye dari Meta Ads (${syncResult.account_id || ''})!`, 'success');
+  } else {
+    fetchCampaigns();
+    showToast(`Sync Meta Graph API selesai: ${syncResult?.recordsProcessed || 0} data metrik termutakhir!`, 'info');
+  }
 });
 
 const handleSync = () => {
@@ -305,6 +312,11 @@ const handleSaveLog = async (logData) => {
 onMounted(() => {
   if (isAuthenticated.value) {
     fetchCampaigns();
+    const savedToken = localStorage.getItem('metasync_meta_token');
+    const savedAccount = localStorage.getItem('metasync_meta_account');
+    if (savedToken && savedAccount) {
+      handleSync();
+    }
   }
   initTelegramBotListener();
 });

@@ -548,9 +548,7 @@ const {
   triggerSync,
   setPollingInterval,
   toggleCampaignStatusOnMeta
-} = useMetaSync(() => {
-  emit('trigger-sync');
-});
+} = useMetaSync();
 
 // UI State
 const searchQuery = ref('');

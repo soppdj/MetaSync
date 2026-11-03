@@ -1,5 +1,5 @@
 # MASTER PROMPT & ARSITEKTUR SISTEM: METASYNC BY FATHERLAB
-> **Versi Dokumen:** 1.7.3  
+> **Versi Dokumen:** 1.7.4  
 > **Terakhir Diperbarui:** 3 November 2026
 > **Author & Brand:** FatherLab (Sopianto Djahar)  
 > **Repository GitHub:** [https://github.com/soppdj/MetaSync](https://github.com/soppdj/MetaSync)  
@@ -332,6 +332,7 @@ CREATE TABLE IF NOT EXISTS report_ledger (
 | **v1.7.1** | 03 Nov 2026 | User Request | Perbaikan komprehensif seluruh integrasi & Supabase Master SQL Schema: Penyediaan file `supabase/schema.sql` siap eksekusi di SQL Editor (lengkap RLS permisif untuk anon key, Realtime, indexes, seed data), penambahan tombol diagnosa & tes koneksi langsung di antarmuka Settings (`SettingsModal.vue`) untuk Supabase, Meta Ads Graph v21.0, Telegram Bot, dan Gemini AI, serta implementasi mesin direct browser-to-Meta sync (`metaApi.js`) dan Gemini fallback streaming (`geminiClient.js`). |
 | **v1.7.2** | 03 Nov 2026 | User Request | Perbaikan Layar Putih Online (Vercel Blank Screen), Bypass AdBlocker Meta Ads, & Engine Telegram 2-Way Command: (1) Memperbaiki rewrite `vercel.json` dan PWA `sw.js` (Network-First) agar bundle JS statis tidak tertimpa HTML di production online; (2) Mengimplementasikan serverless relay & reverse proxy (`/api/meta-proxy` dan `/api/sync-meta`) untuk bypass error `Failed to fetch` akibat ekstensi AdBlocker (Brave Shields, uBlock, AdGuard) pada Meta Graph API v21.0; (3) Mengaktifkan autonomous 2-way Telegram command engine (`telegramBotListener.js`) dengan long-polling dan 1-click webhook registrar di `SettingsModal.vue` untuk perintah `/status`, `/rekap`, `/kill <id>`, `/ping`, dan `/help`; (4) Memastikan Master SQL Schema Supabase selalu tersinkronisasi otomatis di repositori GitHub. |
 | **v1.7.3** | 03 Nov 2026 | User Request | Pembersihan Menyeluruh Seluruh Data Sampel / Dummy (Pure Real-Connection Mode): Menghapus seluruh data contoh kampanye, creative leaderboard, chart historis, data seed Supabase SQL, dan baris pembukuan laporan, serta mengaktifkan mekanisme sanitasi otomatis di browser storage agar aplikasi murni hanya menampilkan data yang benar-benar tersambung dari Meta Ads dan Supabase. |
+| **v1.7.4** | 03 Nov 2026 | User Request | Perbaikan Ingest Langsung Meta Ads Marketing API v21.0 & Sinkronisasi Tampilan Real-Time: Mengintegrasikan kampanye nyata Meta Ads (seperti akun "EBOOK ASKS PRO" `act_1252088640428224`) langsung ke state frontend reaktif via `ingestLiveMetaCampaigns` tanpa ketergantungan wajib pada database Supabase yang belum terisi. Mengimplementasikan bus subscriber sinkronisasi terpusat (`syncListeners`) pada `useMetaSync`, mapping otomatis stage kanban (`test`, `scale1`, `scale2`), anti-blocker fallback otomatis ke `/api/sync-meta`, dan penghubungan prop `campaigns` ke `HoloGlobeHUD` dan `PerformanceCharts`. |
 
 ---
 

@@ -161,6 +161,7 @@ export function useSupabase() {
         localStorage.setItem('metasync_campaigns_cache', JSON.stringify(campaigns.value));
         createDataSnapshot('Auto-Sync Merge');
       } else {
+        // Jika Supabase kosong, pertahankan campaigns yang sudah dimuat dari Meta Ads via localStorage
         campaigns.value = sanitizeCampaigns(campaigns.value);
         localStorage.setItem('metasync_campaigns_cache', JSON.stringify(campaigns.value));
       }
@@ -172,6 +173,42 @@ export function useSupabase() {
     } finally {
       isLoading.value = false;
     }
+  };
+
+  // Ingest Live Meta Campaigns Directly (Bypasses empty Supabase DB dependency)
+  const ingestLiveMetaCampaigns = (incomingCampaigns) => {
+    if (!Array.isArray(incomingCampaigns) || incomingCampaigns.length === 0) return;
+
+    const currentList = [...campaigns.value];
+    const merged = incomingCampaigns.map(inc => {
+      const existing = currentList.find(c => 
+        (c.meta_campaign_id && c.meta_campaign_id === inc.meta_campaign_id) || 
+        c.id === inc.id
+      );
+      if (existing) {
+        return {
+          ...inc,
+          id: existing.id || inc.id,
+          base_price: (existing.base_price && existing.base_price > 0) ? existing.base_price : inc.base_price,
+          cogs: (existing.cogs !== undefined && existing.cogs > 0) ? existing.cogs : inc.cogs,
+          status: (existing.status && ['test', 'scale1', 'scale2', 'paused'].includes(existing.status)) ? existing.status : inc.status,
+        };
+      }
+      return inc;
+    });
+
+    // Pertahankan campaign lokal yang belum ada di Meta
+    const nonMetaLocal = currentList.filter(c => 
+      !incomingCampaigns.some(inc => inc.meta_campaign_id === c.meta_campaign_id || inc.id === c.id) &&
+      c.meta_campaign_id?.startsWith('cmp_') && 
+      !c.meta_campaign_id?.startsWith('cmp_test_8819201')
+    );
+
+    const finalList = sanitizeCampaigns([...merged, ...nonMetaLocal]);
+    campaigns.value = finalList;
+    localStorage.setItem('metasync_campaigns_cache', JSON.stringify(finalList));
+    createDataSnapshot('Live Meta Ads Direct Ingest');
+    return finalList;
   };
 
   // Create Campaign
@@ -348,6 +385,7 @@ export function useSupabase() {
     isLoading,
     error,
     fetchCampaigns,
+    ingestLiveMetaCampaigns,
     createCampaign,
     updateCampaignStatus,
     pauseAdset,
