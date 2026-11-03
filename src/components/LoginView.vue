@@ -228,7 +228,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 required
                 autocomplete="current-password"
-                placeholder="Masukkan password admin..."
+                placeholder="Masukkan password atau PIN admin..."
                 @input="playKeySound"
                 :disabled="isAuthenticating || isUnlocked"
                 class="w-full px-3 py-2 bg-dark-900 border border-cyan-500/30 text-white text-xs font-mono tracking-wider focus:outline-none focus:border-copper-400 focus:shadow-glow-copper transition-all disabled:opacity-50 pr-10"
@@ -270,20 +270,6 @@
 
             <span>{{ buttonText }}</span>
           </button>
-
-          <!-- Alternatif Cepat: Login dengan PIN 000000 -->
-          <div class="pt-2 border-t border-cyan-500/15">
-            <button
-              type="button"
-              @click="handlePinAccess"
-              :disabled="isAuthenticating || isUnlocked"
-              class="w-full py-1.5 px-3 bg-dark-900/90 hover:bg-dark-850 border border-dark-750 hover:border-cyan-500/50 text-slate-300 hover:text-cyan-300 text-[11px] font-bold flex items-center justify-center gap-2 transition-all font-mono"
-            >
-              <KeyRound class="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-              <span>⚡ Login Cepat dengan PIN (000000)</span>
-            </button>
-          </div>
-
         </form>
 
         <!-- Segmented Tech Divider & Reticles -->

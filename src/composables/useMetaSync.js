@@ -21,6 +21,7 @@ const customDateRange = ref(JSON.parse(localStorage.getItem('metasync_custom_dat
 // Audience Regional & Platform Breakdown State
 const audienceRegions = ref(JSON.parse(localStorage.getItem('metasync_audience_regions') || '[]'));
 const platformBreakdown = ref(JSON.parse(localStorage.getItem('metasync_platform_breakdown') || '{"instagram":{"percentage":65,"spend":0,"impressions":0,"clicks":0,"purchases":0},"facebook":{"percentage":35,"spend":0,"impressions":0,"clicks":0,"purchases":0}}'));
+const ageGenderDemographics = ref(JSON.parse(localStorage.getItem('metasync_age_gender') || '{"gender":{"female":56,"male":44},"ageBrackets":[{"age":"18-24","percentage":16},{"age":"25-34","percentage":42,"isCore":true},{"age":"35-44","percentage":28},{"age":"45-54","percentage":10},{"age":"55+","percentage":4}],"topDemographic":"Wanita, 25-34 Tahun"}'));
 
 // Live Telemetry Event Logs
 const syncLogs = ref([
@@ -125,6 +126,10 @@ export function useMetaSync(onSyncSuccess) {
         platformBreakdown.value = successData.platformBreakdown;
         localStorage.setItem('metasync_platform_breakdown', JSON.stringify(successData.platformBreakdown));
       }
+      if (successData.ageGenderDemographics) {
+        ageGenderDemographics.value = successData.ageGenderDemographics;
+        localStorage.setItem('metasync_age_gender', JSON.stringify(successData.ageGenderDemographics));
+      }
 
       syncListeners.forEach(listener => {
         try {
@@ -219,6 +224,7 @@ export function useMetaSync(onSyncSuccess) {
     customDateRange,
     audienceRegions,
     platformBreakdown,
+    ageGenderDemographics,
     setDateRange,
     triggerSync,
     setPollingInterval,
