@@ -303,18 +303,54 @@
           </div>
 
           <!-- Panduan Perintah 2-Way Bot & Webhook Setup -->
-          <div class="p-3 rounded-xl bg-dark-900/90 border border-cyan-500/20 text-[11px] space-y-2 mt-2">
+          <div class="p-3.5 rounded-xl bg-dark-900/90 border border-cyan-500/30 text-[11px] space-y-3 mt-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-cyan-300 flex items-center gap-1.5">
-                <Terminal class="w-3.5 h-3.5 text-cyan-400" />
-                <span>2-Way Remote Command Bot:</span>
+              <span class="font-bold text-cyan-300 flex items-center gap-1.5 font-mono">
+                <Terminal class="w-4 h-4 text-cyan-400" />
+                <span>2-Way Remote Command Bot (Bisa Kirim & Terima Perintah):</span>
               </span>
-              <span class="text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Live Listener Siap</span>
-              </span>
+              <button 
+                type="button" 
+                @click="checkCurrentWebhook" 
+                :disabled="isCheckingWebhook || !form.telegramToken"
+                class="text-[10px] text-cyan-400 hover:text-cyan-200 flex items-center gap-1 font-mono disabled:opacity-40"
+              >
+                <RefreshCw class="w-3 h-3" :class="isCheckingWebhook ? 'animate-spin' : ''" />
+                <span>Cek Status</span>
+              </button>
             </div>
 
+            <!-- Live Status Card -->
+            <div 
+              v-if="currentWebhookInfo && currentWebhookInfo.isSet" 
+              class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-[11px] font-mono text-emerald-300 space-y-1"
+            >
+              <div class="flex items-center gap-1.5 font-bold">
+                <CheckCircle2 class="w-3.5 h-3.5 text-emerald-400" />
+                <span>STATUS: AKTIF SIAP PERINTAH (2-Way Cloud Webhook)</span>
+              </div>
+              <p class="text-[10px] text-slate-300">
+                Bot Telegram Anda terhubung 24 jam ke MetaSync. Anda bisa kirim perintah <span class="text-cyan-300 font-bold">/status</span>, <span class="text-cyan-300 font-bold">/rekap</span>, dan <span class="text-rose-300 font-bold">/kill</span> kapanpun dari HP/Desktop.
+              </p>
+              <div class="text-[9px] text-slate-400 truncate pt-0.5">
+                Target URL: {{ currentWebhookInfo.url }}
+              </div>
+            </div>
+
+            <div 
+              v-else 
+              class="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/40 text-[11px] font-mono text-amber-200 space-y-1"
+            >
+              <div class="flex items-center gap-1.5 font-bold text-amber-300">
+                <AlertCircle class="w-3.5 h-3.5 text-amber-400" />
+                <span>STATUS: Belum Bisa Menerima Perintah (Hanya Kirim Pesan)</span>
+              </div>
+              <p class="text-[10px] text-slate-300">
+                Saat ini bot hanya bisa menerima notifikasi keluar. Untuk membuatnya bisa menerima & merespons perintah (<span class="text-cyan-300 font-bold">/status</span>, <span class="text-rose-300 font-bold">/kill</span>, dll), aktifkan Remote Command Webhook di bawah ini.
+              </p>
+            </div>
+
+            <!-- Command List -->
             <div class="text-[10px] font-mono text-slate-300 space-y-1 bg-dark-950 p-2.5 rounded-lg border border-dark-800">
               <div class="flex items-center justify-between">
                 <div><span class="text-cyan-400 font-bold">/status</span> <span class="text-slate-400">- Cek spend, omset, & ROAS hari ini</span></div>
@@ -326,21 +362,33 @@
                 <div><span class="text-rose-400 font-bold">/kill &lt;id&gt;</span> <span class="text-slate-400">- Hentikan adset seketika di Meta Ads</span></div>
               </div>
               <div class="flex items-center justify-between">
+                <div><span class="text-cyan-400 font-bold">/activate &lt;id&gt;</span> <span class="text-slate-400">- Aktifkan kembali adset di Meta Ads</span></div>
+              </div>
+              <div class="flex items-center justify-between">
                 <div><span class="text-cyan-400 font-bold">/help</span> <span class="text-slate-400">- Bantuan daftar perintah</span></div>
               </div>
             </div>
 
+            <!-- Action Buttons -->
             <div class="pt-1 flex items-center justify-between flex-wrap gap-2">
-              <span class="text-[10px] text-slate-400">Untuk Vercel / Mode Online Deployment:</span>
               <button
                 type="button"
                 @click="runRegisterWebhook"
                 :disabled="webhookRegistering || !form.telegramToken"
-                class="px-2.5 py-1 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 hover:bg-cyan-900 transition-all font-mono flex items-center gap-1.5 disabled:opacity-40"
+                class="px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-600 to-teal-500 hover:opacity-95 shadow-glow-cyan transition-all font-mono flex items-center gap-2 disabled:opacity-40"
               >
-                <RefreshCw v-if="webhookRegistering" class="w-3 h-3 animate-spin" />
-                <Zap v-else class="w-3 h-3 text-cyan-400" />
-                <span>{{ webhookStatus ? webhookStatus : 'Set Webhook URL ke Telegram' }}</span>
+                <RefreshCw v-if="webhookRegistering" class="w-3.5 h-3.5 animate-spin" />
+                <Zap v-else class="w-3.5 h-3.5 text-yellow-300" />
+                <span>{{ webhookStatus ? webhookStatus : '⚡ Aktifkan Penerimaan Perintah Telegram (2-Way)' }}</span>
+              </button>
+
+              <button
+                v-if="currentWebhookInfo && currentWebhookInfo.isSet"
+                type="button"
+                @click="runDeleteWebhook"
+                class="px-2 py-1 rounded-lg text-[10px] font-mono text-slate-400 hover:text-rose-300 hover:bg-rose-950/40 border border-dark-750 transition-all"
+              >
+                Putus Webhook
               </button>
             </div>
           </div>
@@ -501,7 +549,7 @@ import {
   testGeminiConnection 
 } from '../utils/integrationTester';
 import { SUPABASE_SCHEMA_SQL } from '../utils/supabaseSchemaCode';
-import { registerTelegramWebhook } from '../utils/telegramBotListener';
+import { registerTelegramWebhook, getTelegramWebhookStatus, deleteTelegramWebhook } from '../utils/telegramBotListener';
 
 const props = defineProps({
   initialSettings: {
@@ -613,27 +661,60 @@ const runTestGemini = async () => {
   }
 };
 
-// 5. Register Webhook URL to Telegram Server (for Vercel Online Deployments)
+// 5. Telegram 2-Way Command Webhook Integration
 const webhookRegistering = ref(false);
 const webhookStatus = ref('');
+const currentWebhookInfo = ref(null);
+const isCheckingWebhook = ref(false);
+
+const checkCurrentWebhook = async () => {
+  if (!form.value.telegramToken) return;
+  isCheckingWebhook.value = true;
+  try {
+    const info = await getTelegramWebhookStatus(form.value.telegramToken);
+    currentWebhookInfo.value = info;
+  } catch (e) {
+    console.warn('Check webhook error:', e);
+  } finally {
+    isCheckingWebhook.value = false;
+  }
+};
 
 const runRegisterWebhook = async () => {
   if (!form.value.telegramToken) return;
   webhookRegistering.value = true;
   webhookStatus.value = '';
   try {
-    const res = await registerTelegramWebhook(form.value.telegramToken, window.location.origin);
-    webhookStatus.value = '✓ Webhook Telegram Aktif!';
+    const res = await registerTelegramWebhook(
+      form.value.telegramToken,
+      window.location.origin,
+      form.value.metaToken,
+      form.value.metaAccount,
+      form.value.telegramChat
+    );
+    webhookStatus.value = '✓ Penerimaan Perintah Telegram Aktif!';
+    await checkCurrentWebhook();
     setTimeout(() => {
       webhookStatus.value = '';
-    }, 4000);
+    }, 5000);
   } catch (err) {
     webhookStatus.value = `Gagal: ${err.message}`;
     setTimeout(() => {
       webhookStatus.value = '';
-    }, 5000);
+    }, 6000);
   } finally {
     webhookRegistering.value = false;
+  }
+};
+
+const runDeleteWebhook = async () => {
+  if (!form.value.telegramToken) return;
+  if (!confirm('Hapus registrasi webhook Telegram?')) return;
+  try {
+    await deleteTelegramWebhook(form.value.telegramToken);
+    await checkCurrentWebhook();
+  } catch (e) {
+    console.warn('Delete webhook error:', e);
   }
 };
 

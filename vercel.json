@@ -7,6 +7,10 @@
       "destination": "https://graph.facebook.com/$1"
     },
     {
+      "source": "/api/telegram-proxy/(.*)",
+      "destination": "https://api.telegram.org/$1"
+    },
+    {
       "source": "/((?!assets/|favicon\\.svg|manifest\\.json|sw\\.js|api/).*)",
       "destination": "/index.html"
     }

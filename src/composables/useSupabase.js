@@ -128,6 +128,28 @@ export function useSupabase() {
 
     supabaseInstance = null;
     isConnected.value = Boolean(supabaseUrl.value && supabaseKey.value);
+
+    // Persist to Supabase system_settings table if connected
+    if (supabaseUrl.value && supabaseKey.value) {
+      try {
+        const client = getSupabaseClient();
+        if (client) {
+          client.from('system_settings').upsert({
+            key: 'metasync_settings',
+            value: {
+              metaToken: config.metaToken || localStorage.getItem(STORAGE_KEYS.META_TOKEN) || '',
+              metaAccount: config.metaAccount || localStorage.getItem(STORAGE_KEYS.META_ACCOUNT) || '',
+              telegramToken: config.telegramToken || localStorage.getItem(STORAGE_KEYS.TELEGRAM_TOKEN) || '',
+              telegramChat: config.telegramChat || localStorage.getItem(STORAGE_KEYS.TELEGRAM_CHAT) || '',
+              geminiKey: config.geminiKey || localStorage.getItem(STORAGE_KEYS.GEMINI_KEY) || '',
+              updated_at: new Date().toISOString()
+            }
+          }, { onConflict: 'key' }).then(() => {}).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('System settings upsert warning:', err);
+      }
+    }
   };
 
   const getSavedSettings = () => ({

@@ -21,6 +21,13 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/meta-proxy/, ''),
         secure: true
+      },
+      // Local dev proxy to Telegram Bot API to bypass CORS & AdBlockers
+      '/api/telegram-proxy': {
+        target: 'https://api.telegram.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/telegram-proxy/, ''),
+        secure: true
       }
     }
   },
