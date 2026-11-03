@@ -21,13 +21,13 @@
               </h2>
               <span 
                 class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-wider"
-                :class="syncMode === 'LIVE_META_API' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50' : 'bg-cyan-950 text-cyan-300 border-cyan-500/50'"
+                :class="syncMode.startsWith('LIVE') ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50' : 'bg-dark-900 text-slate-400 border-dark-700'"
               >
-                {{ syncMode === 'LIVE_META_API' ? '● LIVE GRAPH v20.0' : '● SIMULATED TELEMETRY' }}
+                {{ syncMode.startsWith('LIVE') ? '● LIVE GRAPH v21.0' : '● OFFLINE (BELUM TERKONEKSI)' }}
               </span>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-              <span class="text-cyan-300 font-bold">ACC: {{ accountId }}</span>
+              <span class="text-cyan-300 font-bold">ACC: {{ accountId || 'Belum Dikonfigurasi' }}</span>
               <span>&bull;</span>
               <span>LAST SYNC: <strong class="text-white">{{ lastSyncedAt }}</strong></span>
               <span>&bull;</span>
@@ -185,6 +185,27 @@
 
           <!-- Table Body -->
           <tbody class="divide-y divide-dark-800">
+            <!-- Empty State Real Data Only -->
+            <tr v-if="filteredCampaigns.length === 0">
+              <td colspan="15" class="p-10 text-center text-slate-500 font-mono">
+                <div class="flex flex-col items-center justify-center space-y-2.5">
+                  <div class="w-10 h-10 rounded-xl bg-dark-950 border border-dark-800 flex items-center justify-center text-slate-500">
+                    <Search class="w-5 h-5" />
+                  </div>
+                  <div class="text-xs font-bold text-slate-300 tracking-wider">[ TIDAK ADA KAMPANYE REAL AKTIF ]</div>
+                  <p class="text-[11px] text-slate-500 max-w-md">
+                    Seluruh sampel/dummy data telah dihapus. Silakan hubungkan Ad Account ID & Access Token di menu Pengaturan, atau buat kampanye baru untuk memantau metrik secara real.
+                  </p>
+                  <button
+                    @click="$emit('open-settings')"
+                    class="mt-1 px-3.5 py-1.5 text-xs font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 hover:bg-cyan-900 transition-all font-mono"
+                  >
+                    Buka Pengaturan API Meta Ads
+                  </button>
+                </div>
+              </td>
+            </tr>
+
             <tr 
               v-for="camp in filteredCampaigns" 
               :key="camp.id"

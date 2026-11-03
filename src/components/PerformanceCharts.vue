@@ -38,7 +38,7 @@
     </div>
 
     <!-- Centerpiece: 3D Holographic Earth Globe & Telemetry Deck (Matching Futuristic Reference) -->
-    <HoloGlobeHUD />
+    <HoloGlobeHUD :campaigns="campaigns" />
 
     <!-- Main Chart: Spend vs Revenue vs Nett Profit (Soft Futuristic Area Chart) -->
     <div class="hud-card hud-corner p-6 rounded-3xl space-y-4">
@@ -106,10 +106,10 @@
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
               <span class="text-slate-300">1. Impressions → Clicks (CTR)</span>
-              <span class="text-cyan-400 font-bold">2.68% (Target > 2.0%)</span>
+              <span class="text-cyan-400 font-bold">{{ funnel.ctr.toFixed(2) }}% (Target > 2.0%)</span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
-              <div class="bg-gradient-to-r from-brand-600 to-cyan-400 h-full rounded-full shadow-glow-cyan" style="width: 85%"></div>
+              <div class="bg-gradient-to-r from-brand-600 to-cyan-400 h-full rounded-full shadow-glow-cyan" :style="{ width: `${Math.min(100, funnel.ctr * 35)}%` }"></div>
             </div>
           </div>
 
@@ -117,10 +117,10 @@
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
               <span class="text-slate-300">2. Clicks → Landing Page Views (LC to LPV)</span>
-              <span class="text-cyan-300 font-bold">84.2% (Target ≥ 80%)</span>
+              <span class="text-cyan-300 font-bold">{{ funnel.lcToLpv.toFixed(1) }}% (Target ≥ 80%)</span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
-              <div class="bg-gradient-to-r from-teal-500 to-cyan-400 h-full rounded-full shadow-glow-cyan" style="width: 84%"></div>
+              <div class="bg-gradient-to-r from-teal-500 to-cyan-400 h-full rounded-full shadow-glow-cyan" :style="{ width: `${Math.min(100, funnel.lcToLpv)}%` }"></div>
             </div>
           </div>
 
@@ -128,10 +128,10 @@
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
               <span class="text-slate-300">3. LPV → Add-To-Cart (LPV to ATC)</span>
-              <span class="text-copper-400 font-bold">41.6% (Target ≥ 40%)</span>
+              <span class="text-copper-400 font-bold">{{ funnel.lpvToAtc.toFixed(1) }}% (Target ≥ 40%)</span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
-              <div class="bg-gradient-to-r from-brand-500 to-copper-500 h-full rounded-full shadow-glow-copper" style="width: 72%"></div>
+              <div class="bg-gradient-to-r from-brand-500 to-copper-500 h-full rounded-full shadow-glow-copper" :style="{ width: `${Math.min(100, funnel.lpvToAtc * 1.5)}%` }"></div>
             </div>
           </div>
 
@@ -139,10 +139,10 @@
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
               <span class="text-slate-300">4. Add-To-Cart → Checkout (ATC to IC)</span>
-              <span class="text-copper-300 font-bold">33.5% (Target ≥ 30%)</span>
+              <span class="text-copper-300 font-bold">{{ funnel.atcToIc.toFixed(1) }}% (Target ≥ 30%)</span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
-              <div class="bg-gradient-to-r from-copper-600 to-copper-400 h-full rounded-full shadow-glow-copper" style="width: 65%"></div>
+              <div class="bg-gradient-to-r from-copper-600 to-copper-400 h-full rounded-full shadow-glow-copper" :style="{ width: `${Math.min(100, funnel.atcToIc * 2)}%` }"></div>
             </div>
           </div>
 
@@ -150,10 +150,10 @@
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
               <span class="text-slate-300">5. Checkout → Pembelian (Closing Rate)</span>
-              <span class="text-emerald-400 font-bold">83.4% (Target ≥ 82%)</span>
+              <span class="text-emerald-400 font-bold">{{ funnel.closingRate.toFixed(1) }}% (Target ≥ 82%)</span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
-              <div class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full" style="width: 83%"></div>
+              <div class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full" :style="{ width: `${Math.min(100, funnel.closingRate)}%` }"></div>
             </div>
           </div>
         </div>
@@ -198,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Activity } from 'lucide-vue-next';
 import Chart from 'chart.js/auto';
 import { formatIDR } from '../utils/currency';
@@ -208,7 +208,34 @@ const props = defineProps({
   chartData: {
     type: Array,
     required: true
+  },
+  campaigns: {
+    type: Array,
+    default: () => []
   }
+});
+
+// Dynamic Funnel calculations from real campaigns
+const funnel = computed(() => {
+  let imp = 0, clicks = 0, lpv = 0, atc = 0, ic = 0, pur = 0;
+  (props.campaigns || []).forEach(c => {
+    (c.adsets || []).forEach(a => {
+      imp += Number(a.metrics?.impressions || 0);
+      clicks += Number(a.metrics?.clicks || 0);
+      lpv += Number(a.metrics?.lpv || 0);
+      atc += Number(a.metrics?.atc || 0);
+      ic += Number(a.metrics?.ic || 0);
+      pur += Number(a.metrics?.purchases || 0);
+    });
+  });
+
+  const ctr = imp > 0 ? (clicks / imp) * 100 : 0;
+  const lcToLpv = clicks > 0 ? (lpv / clicks) * 100 : 0;
+  const lpvToAtc = lpv > 0 ? (atc / lpv) * 100 : 0;
+  const atcToIc = atc > 0 ? (ic / atc) * 100 : 0;
+  const closingRate = ic > 0 ? (pur / ic) * 100 : 0;
+
+  return { imp, clicks, lpv, atc, ic, pur, ctr, lcToLpv, lpvToAtc, atcToIc, closingRate };
 });
 
 const selectedRange = ref('7d');

@@ -149,62 +149,11 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Fallback to realistic telemetry if no token or empty data
-    if (metricsData.length === 0) {
-      metricsData = [
-        {
-          campaign_id: 'cmp_scale2_7726315',
-          campaign_name: 'SCALE 2 - Deep Exfoliating Back Soap Bar',
-          adset_id: 'adset_scale2_01',
-          adset_name: 'AdSet Body Care High Intent LAL 3%',
-          spend: 7500000,
-          impressions: 260000,
-          clicks: 7280,
-          reach: 192500,
-          frequency: 1.35,
-          lpv: 6220,
-          atc: 2630,
-          ic: 847,
-          purchases: 740,
-          revenue: 73260000
-        },
-        {
-          campaign_id: 'cmp_scale1_9918234',
-          campaign_name: 'SCALE 1 - Alpha Masculine Eau De Parfum 50ml',
-          adset_id: 'adset_scale1_01',
-          adset_name: 'AdSet Men Grooming & Lifestyle Big Cities',
-          spend: 2500000,
-          impressions: 87000,
-          clicks: 2192,
-          reach: 71300,
-          frequency: 1.22,
-          lpv: 1830,
-          atc: 765,
-          ic: 255,
-          purchases: 210,
-          revenue: 52290000
-        },
-        {
-          campaign_id: 'cmp_test_8819201',
-          campaign_name: 'TEST - Anti-Acne Clarifying Serum 30ml',
-          adset_id: 'adset_test_01',
-          adset_name: 'AdSet Broad - Skincare Indonesia 18-35',
-          spend: 500000,
-          impressions: 15000,
-          clicks: 337,
-          reach: 12500,
-          frequency: 1.20,
-          lpv: 265,
-          atc: 104,
-          ic: 35,
-          purchases: 28,
-          revenue: 4172000
-        }
-      ];
-    }
+    // 2. Data Murni Real (Tanpa Sampel/Dummy)
+    // Jika tidak ada data aktif dari Meta, metricsData dibiarkan kosong []
 
     // 3. Optional Supabase Upsert
-    if (SUPABASE_URL && SUPABASE_KEY) {
+    if (SUPABASE_URL && SUPABASE_KEY && metricsData.length > 0) {
       try {
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         for (const metric of metricsData) {
@@ -239,7 +188,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      mode: META_TOKEN ? 'LIVE_META_API (v21.0)' : 'SIMULATION_DEMO',
+      mode: META_TOKEN ? 'LIVE_META_API (v21.0)' : 'OFFLINE',
       account_id: AD_ACCOUNT_ID,
       recordsProcessed: metricsData.length,
       campaigns: liveCampaigns,

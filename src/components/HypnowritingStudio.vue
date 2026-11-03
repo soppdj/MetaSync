@@ -1159,8 +1159,8 @@ const formNarasi = ref({
 const formLpBuilder = ref({
   productName: '',
   category: '',
-  price: '149000',
-  offer: 'Promo Diskon 50% + Garansi 30 Hari Uang Kembali',
+  price: '',
+  offer: '',
   personaData: '',
   vpcData: '',
   hypnowritingData: '',
@@ -1190,12 +1190,12 @@ const syncFromPreviousTools = () => {
       formVpc.value.productName || 
       formHypnowriting.value.productName || 
       formNarasi.value.productName || 
-      'Anti-Acne Clarifying Serum 30ml';
+      '';
   }
 
   // Sync Category
   if (!formLpBuilder.value.category) {
-    formLpBuilder.value.category = formNarasi.value.category || 'Skincare / Perawatan Kulit';
+    formLpBuilder.value.category = formNarasi.value.category || '';
   }
 
   // Sync Persona

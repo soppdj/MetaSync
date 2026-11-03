@@ -202,33 +202,16 @@ EXCEPTION
 END $$;
 
 -- ==============================================================================
--- 12. DATA AWAL (SEED) SEBAGAI CONTOH KAMPANYE AKTIF (OPSIONAL / IDEMPOTEN)
+-- 12. PEMBERSIHAN OTOMATIS DATA SAMPLE / DUMMY (HANYA SISAKAN DATA REAL)
 -- ==============================================================================
-INSERT INTO public.campaigns (id, name, base_price, cogs, status, meta_campaign_id, objective, daily_budget)
-VALUES 
-    ('c1111111-1111-1111-1111-111111111111', 'TEST - Anti-Acne Clarifying Serum 30ml', 149000, 35000, 'test', 'cmp_test_8819201', 'OUTCOME_SALES', 500000),
-    ('c2222222-2222-2222-2222-222222222222', 'SCALE 1 - Alpha Masculine Eau De Parfum 50ml', 249000, 52000, 'scale1', 'cmp_scale1_9918234', 'OUTCOME_SALES', 2500000),
-    ('c3333333-3333-3333-3333-333333333333', 'SCALE 2 - Deep Exfoliating Back Soap Bar', 99000, 18000, 'scale2', 'cmp_scale2_7726315', 'OUTCOME_SALES', 7500000)
-ON CONFLICT (id) DO UPDATE 
-SET base_price = EXCLUDED.base_price, cogs = EXCLUDED.cogs;
-
--- Seed Adsets
-INSERT INTO public.adsets (id, campaign_id, meta_adset_id, name, status, daily_budget)
-VALUES
-    ('a1111111-1111-1111-1111-111111111111', 'c1111111-1111-1111-1111-111111111111', 'adset_test_01', 'Adset Broad - Skincare Indonesia 18-35', 'ACTIVE', 500000),
-    ('a2222222-2222-2222-2222-222222222222', 'c2222222-2222-2222-2222-222222222222', 'adset_scale1_01', 'Adset Men Grooming & Lifestyle Big Cities', 'ACTIVE', 2500000),
-    ('a3333333-3333-3333-3333-333333333333', 'c3333333-3333-3333-3333-333333333333', 'adset_scale2_01', 'Adset Body Care High Intent LAL 3%', 'ACTIVE', 7500000)
-ON CONFLICT (id) DO NOTHING;
-
--- Seed Daily Metrics (Hari ini)
-INSERT INTO public.daily_metrics (adset_id, date, spend, impressions, clicks, lpv, atc, ic, purchases, revenue, reach, frequency)
-VALUES
-    ('a1111111-1111-1111-1111-111111111111', CURRENT_DATE, 500000, 15000, 337, 265, 104, 35, 28, 4172000, 12500, 1.20),
-    ('a2222222-2222-2222-2222-222222222222', CURRENT_DATE, 2500000, 87000, 2192, 1830, 765, 255, 210, 52290000, 71300, 1.22),
-    ('a3333333-3333-3333-3333-333333333333', CURRENT_DATE, 7500000, 260000, 7280, 6220, 2630, 847, 740, 73260000, 192500, 1.35)
-ON CONFLICT (adset_id, date) DO UPDATE
-SET spend = EXCLUDED.spend, purchases = EXCLUDED.purchases, revenue = EXCLUDED.revenue;
+-- Menghapus data contoh/sample lama agar database hanya menyimpan data riil pengguna
+DELETE FROM public.campaigns 
+WHERE id IN ('c1111111-1111-1111-1111-111111111111', 'c2222222-2222-2222-2222-222222222222', 'c3333333-3333-3333-3333-333333333333')
+   OR meta_campaign_id IN ('cmp_test_8819201', 'cmp_scale1_9918234', 'cmp_scale2_7726315')
+   OR name ILIKE '%Anti-Acne Clarifying Serum%'
+   OR name ILIKE '%Alpha Masculine Eau De Parfum%'
+   OR name ILIKE '%Deep Exfoliating Back Soap Bar%';
 
 -- ==============================================================================
--- SELESAI: Skema MetaSync Supabase Berhasil Dikonfigurasi
+-- SELESAI: Skema Master MetaSync Supabase Siap Digunakan (Murni Data Real)
 -- ==============================================================================

@@ -162,6 +162,11 @@
             </thead>
 
             <tbody class="divide-y divide-dark-800 font-mono text-xs">
+              <tr v-if="sortedRecords.length === 0">
+                <td colspan="9" class="py-10 text-center text-slate-500 font-mono">
+                  Belum ada catatan buku besar laporan. Masukkan data keuangan hari ini pada form di atas.
+                </td>
+              </tr>
               <tr
                 v-for="(row, idx) in sortedRecords"
                 :key="row.id || idx"
@@ -602,30 +607,32 @@ const timefilters = [
   { id: 'monthly', label: 'Bulanan (30 Hari)' },
 ];
 
-// Initial Data matching exact numbers from the user's spreadsheet screenshot
-const INITIAL_TABLE_RECORDS = [
-  { id: 1, no: 7, date: '7-September-26', ic: 3, purchases: 2, revenue: 286000, spend: 186750 },
-  { id: 2, no: 8, date: '8-September-26', ic: 3, purchases: 2, revenue: 286000, spend: 140434 },
-  { id: 3, no: 9, date: '9-September-26', ic: 5, purchases: 3, revenue: 429000, spend: 160573 },
-  { id: 4, no: 10, date: '10-September-26', ic: 1, purchases: 1, revenue: 143000, spend: 32804 },
-  { id: 5, no: 11, date: '11-September-26', ic: 4, purchases: 2, revenue: 286000, spend: 78698 },
-  { id: 6, no: 12, date: '12-September-26', ic: 0, purchases: 0, revenue: 0, spend: 35319 },
-  { id: 7, no: 13, date: '13-September-26', ic: 1, purchases: 1, revenue: 143000, spend: 70000 },
-  { id: 8, no: 14, date: '14-September-26', ic: 3, purchases: 3, revenue: 429000, spend: 70709 },
-  { id: 9, no: 15, date: '15-September-26', ic: 1, purchases: 1, revenue: 143000, spend: 40413 },
-  { id: 10, no: 16, date: '16-September-26', ic: 2, purchases: 0, revenue: 0, spend: 83662 },
-];
+// Sanitizer: Hapus sampel demo lama agar murni menyisakan data real
+function sanitizeStoredReports(raw) {
+  try {
+    if (!raw) return [];
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(r => !r.date?.includes('September-26'));
+  } catch (e) {
+    return [];
+  }
+}
 
 const savedRecords = localStorage.getItem('metasync_report_records');
-const tableRecords = ref(savedRecords ? JSON.parse(savedRecords) : INITIAL_TABLE_RECORDS);
+const cleanStoredRecords = sanitizeStoredReports(savedRecords);
+localStorage.setItem('metasync_report_records', JSON.stringify(cleanStoredRecords));
+const tableRecords = ref(cleanStoredRecords);
 
 // Form for new entry
+const todayFormatted = `${new Date().getDate()}-${new Date().toLocaleDateString('id-ID', { month: 'short' })}-${String(new Date().getFullYear()).slice(-2)}`;
+
 const newRecord = ref({
-  date: '17-September-26',
-  ic: 3,
-  purchases: 2,
-  revenue: 286000,
-  spend: 145000,
+  date: todayFormatted,
+  ic: 0,
+  purchases: 0,
+  revenue: 0,
+  spend: 0,
 });
 
 const computedPreviewROI = computed(() => {

@@ -140,13 +140,32 @@ Command Center Meta Ads Automation:
     }
 
     if (text.startsWith('/status')) {
-      const statusText = `📊 *PERFORMA HARI INI (MetaSync)* 📊\n\n` +
-        `• *Total Spend*: Rp 8.000.000\n` +
-        `• *Total Revenue*: Rp 101.549.000\n` +
-        `• *Gross ROAS*: 12.69x\n` +
-        `• *Active Campaigns*: 3 (TEST, SCALE 1, SCALE 2)\n` +
-        `• *Top Creative*: Niacinamide 10% (CTR 3.0%, CPR Rp 11.029)\n\n` +
-        `Ketik \`/kill <adset_id>\` untuk menghentikan adset yang bleed.`;
+      let statusText = '';
+      if (SUPABASE_URL && SUPABASE_KEY) {
+        try {
+          const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+          const today = new Date().toISOString().split('T')[0];
+          const { data: metrics } = await supabase.from('daily_metrics').select('spend, revenue, purchases').eq('date', today);
+          if (metrics && metrics.length > 0) {
+            const totalSpend = metrics.reduce((s, m) => s + Number(m.spend || 0), 0);
+            const totalRev = metrics.reduce((s, m) => s + Number(m.revenue || 0), 0);
+            const totalPurchases = metrics.reduce((s, m) => s + Number(m.purchases || 0), 0);
+            const roas = totalSpend > 0 ? (totalRev / totalSpend).toFixed(2) : '0.00';
+            statusText = `📊 *PERFORMA REAL-TIME HARI INI (MetaSync)* 📊\n\n` +
+              `• *Total Spend*: Rp ${totalSpend.toLocaleString('id-ID')}\n` +
+              `• *Total Revenue*: Rp ${totalRev.toLocaleString('id-ID')}\n` +
+              `• *Total Purchases*: ${totalPurchases} Orders\n` +
+              `• *Blended ROAS*: ${roas}x\n\n` +
+              `_Data murni tersinkronisasi dari Meta Ads v21.0 & Supabase._`;
+          }
+        } catch (e) {}
+      }
+
+      if (!statusText) {
+        statusText = `📊 *PERFORMA HARI INI (MetaSync)* 📊\n\n` +
+          `Belum ada metrik kampanye aktif yang tersinkronisasi hari ini.\n` +
+          `Buka dashboard MetaSync dan lakukan sinkronisasi Meta Ads untuk memuat data riil.`;
+      }
 
       if (BOT_TOKEN) await sendTelegramMessage(BOT_TOKEN, chatId, statusText);
       return res.status(200).json({ status: 'status_sent' });

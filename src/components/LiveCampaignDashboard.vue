@@ -22,16 +22,16 @@
               </h2>
               <span 
                 class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-wider"
-                :class="syncMode === 'LIVE_META_API' ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50' : 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50'"
+                :class="syncMode.startsWith('LIVE') ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50' : 'bg-dark-900 text-slate-400 border-dark-700'"
               >
-                {{ syncMode === 'LIVE_META_API' ? '● LIVE GRAPH v20.0' : '● SIMULATED TELEMETRY' }}
+                {{ syncMode.startsWith('LIVE') ? '● LIVE GRAPH v21.0' : '● OFFLINE (BELUM TERKONEKSI)' }}
               </span>
             </div>
             
             <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 mt-1">
               <span class="flex items-center gap-1.5 text-cyan-300 font-bold">
-                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-                ACC: {{ accountId }}
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                ACC: {{ accountId || 'Belum Dikonfigurasi' }}
               </span>
               <span>&bull;</span>
               <span>LAST SYNC: <strong class="text-white">{{ lastSyncedAt }}</strong></span>

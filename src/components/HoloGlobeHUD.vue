@@ -161,7 +161,7 @@
               </div>
               <!-- Center Target Blip -->
               <div class="absolute text-center z-10">
-                <span class="text-base font-black text-white font-mono">12.35x</span>
+                <span class="text-base font-black text-white font-mono">{{ totalMetrics.roas }}x</span>
                 <span class="text-[8px] text-cyan-300 block">AVG ROAS</span>
               </div>
             </div>
@@ -170,11 +170,11 @@
           <div class="grid grid-cols-2 gap-1.5 text-[10px] pt-1 border-t border-dark-750">
             <div class="bg-dark-950 p-1 border border-dark-800">
               <span class="text-slate-500 block">CPR ACTUAL</span>
-              <span class="text-emerald-400 font-bold">Rp 17.857</span>
+              <span class="text-emerald-400 font-bold">{{ formatIDR(totalMetrics.cpr) }}</span>
             </div>
             <div class="bg-dark-950 p-1 border border-dark-800">
-              <span class="text-slate-500 block">MAX CPR</span>
-              <span class="text-copper-400 font-bold">Rp 37.250</span>
+              <span class="text-slate-500 block">STATUS</span>
+              <span class="text-copper-400 font-bold">{{ totalMetrics.purchases }} Orders</span>
             </div>
           </div>
         </div>
@@ -183,34 +183,34 @@
         <div class="p-3 bg-dark-900/90 border border-copper-500/25 rounded-lg space-y-2">
           <div class="flex justify-between items-center text-[10px]">
             <span class="uppercase font-bold text-copper-400">CONVERSION VELOCITY</span>
-            <span class="text-emerald-400 font-bold">83.4% CLOSE</span>
+            <span class="text-emerald-400 font-bold">{{ totalMetrics.closingRate }}% CLOSE</span>
           </div>
 
           <div class="space-y-1.5 text-[10px]">
             <div>
               <div class="flex justify-between text-slate-300 mb-0.5">
                 <span>ATC to IC Vector:</span>
-                <span class="text-copper-400 font-bold">33.5% (T: 30%)</span>
+                <span class="text-copper-400 font-bold">{{ totalMetrics.atcToIc }}%</span>
               </div>
               <div class="w-full bg-dark-950 h-1.5 border border-dark-750">
-                <div class="bg-copper-500 h-full" style="width: 78%"></div>
+                <div class="bg-copper-500 h-full" :style="{ width: `${Math.min(100, Number(totalMetrics.atcToIc))}%` }"></div>
               </div>
             </div>
 
             <div>
               <div class="flex justify-between text-slate-300 mb-0.5">
                 <span>Closing Rate Efficiency:</span>
-                <span class="text-cyan-400 font-bold">83.4% (T: 82%)</span>
+                <span class="text-cyan-400 font-bold">{{ totalMetrics.closingRate }}%</span>
               </div>
               <div class="w-full bg-dark-950 h-1.5 border border-dark-750">
-                <div class="bg-cyan-400 h-full" style="width: 83%"></div>
+                <div class="bg-cyan-400 h-full" :style="{ width: `${Math.min(100, Number(totalMetrics.closingRate))}%` }"></div>
               </div>
             </div>
           </div>
 
           <div class="pt-1.5 text-[9px] text-slate-400 border-t border-dark-750 flex items-center justify-between">
-            <span>PACKET SENT: 148.2k</span>
-            <span class="text-copper-300 font-bold">0 BLEED DETECTED</span>
+            <span>PACKET SENT: {{ (props.campaigns || []).length }} CAMPAIGNS</span>
+            <span class="text-copper-300 font-bold">REAL TELEMETRY</span>
           </div>
         </div>
 
@@ -245,7 +245,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { formatIDR } from '../utils/currency';
+
+const props = defineProps({
+  campaigns: {
+    type: Array,
+    default: () => []
+  }
+});
+
+const totalMetrics = computed(() => {
+  let spend = 0;
+  let revenue = 0;
+  let purchases = 0;
+  let ic = 0;
+  let atc = 0;
+
+  (props.campaigns || []).forEach(c => {
+    (c.adsets || []).forEach(a => {
+      spend += Number(a.metrics?.spend || 0);
+      revenue += Number(a.metrics?.revenue || 0);
+      purchases += Number(a.metrics?.purchases || 0);
+      ic += Number(a.metrics?.ic || 0);
+      atc += Number(a.metrics?.atc || 0);
+    });
+  });
+
+  const roas = spend > 0 ? (revenue / spend).toFixed(2) : '0.00';
+  const cpr = purchases > 0 ? Math.round(spend / purchases) : 0;
+  const atcToIc = atc > 0 ? ((ic / atc) * 100).toFixed(1) : '0.0';
+  const closingRate = ic > 0 ? ((purchases / ic) * 100).toFixed(1) : '0.0';
+
+  return { spend, revenue, purchases, ic, atc, roas, cpr, atcToIc, closingRate };
+});
 
 const globeCanvas = ref(null);
 let animationFrameId = null;

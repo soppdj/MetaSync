@@ -6,8 +6,8 @@ const isSyncing = ref(false);
 const lastSyncedAt = ref(localStorage.getItem('metasync_last_synced') || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB');
 const syncMessage = ref('');
 const syncStatus = ref('idle'); // 'idle' | 'success' | 'error'
-const syncMode = ref(localStorage.getItem('metasync_meta_token') ? 'LIVE_META_API' : 'SIMULATION_DEMO');
-const accountId = ref(localStorage.getItem('metasync_meta_account') || 'act_fatherlab_live_01');
+const syncMode = ref(localStorage.getItem('metasync_meta_token') ? 'LIVE_META_API' : 'OFFLINE');
+const accountId = ref(localStorage.getItem('metasync_meta_account') || 'Belum Terhubung');
 
 // Real-Time Polling & Countdown Controls
 const autoSyncInterval = ref(Number(localStorage.getItem('metasync_poll_interval')) || 20); // 20 seconds by default
@@ -91,23 +91,16 @@ export function useMetaSync(onSyncSuccess) {
         onSyncSuccess(successData);
       }
     } else {
-      // Simulation Fallback (Jika token belum diisi atau akun belum siap)
+      // OFFLINE / BELUM TERHUBUNG (Murni data real, tidak menyuntikkan simulasi)
       const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
       lastSyncedAt.value = timeStr;
-      syncStatus.value = 'success';
-      syncMode.value = savedToken ? 'LIVE_META_API (OFFLINE)' : 'SIMULATION_DEMO';
-      syncMessage.value = savedToken ? 'Gagal terhubung ke Meta (periksa token di Settings)' : 'Telemetri real-time (Mode Simulasi Demo)';
+      syncStatus.value = savedToken ? 'error' : 'idle';
+      syncMode.value = savedToken ? 'LIVE_META_API (OFFLINE)' : 'OFFLINE';
+      syncMessage.value = savedToken 
+        ? 'Gagal terhubung ke Meta Graph API. Periksa token & Ad Account ID di menu Settings!' 
+        : 'Meta Ads belum terhubung. Masukkan kredensial Meta di menu Settings untuk Live.';
       
-      addLog(
-        savedToken 
-          ? 'Gagal terhubung ke Meta Graph API. Periksa token & Ad Account ID di menu Settings!' 
-          : 'Telemetri berjalan dalam mode demo simulasi (Masukkan kredensial Meta di Settings untuk Live)', 
-        savedToken ? 'WARN' : 'INFO'
-      );
-      
-      if (onSyncSuccess) {
-        onSyncSuccess({ mode: syncMode.value, recordsProcessed: 4 });
-      }
+      addLog(syncMessage.value, savedToken ? 'WARN' : 'INFO');
     }
 
     setTimeout(() => {

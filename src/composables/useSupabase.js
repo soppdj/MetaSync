@@ -1,7 +1,6 @@
 // src/composables/useSupabase.js
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { createClient } from '@supabase/supabase-js';
-import { INITIAL_CAMPAIGNS, INITIAL_CREATIVE_ASSETS, HISTORICAL_CHART_DATA } from '../utils/mockData';
 import { createDataSnapshot, safeMergeCampaigns } from '../utils/dataProtection';
 
 // Persistent LocalStorage config or Vite Env
@@ -14,6 +13,22 @@ const STORAGE_KEYS = {
   TELEGRAM_TOKEN: 'metasync_telegram_token',
   TELEGRAM_CHAT: 'metasync_telegram_chat',
 };
+
+// Sanitizer: Memastikan tidak ada data sampel/dummy yang tersisa di cache
+function sanitizeCampaigns(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter(c => {
+    const isMockId = c.id?.startsWith('a1111111') || c.id?.startsWith('a2222222') || c.id?.startsWith('a3333333') || c.id?.startsWith('c1111111') || c.id?.startsWith('c2222222') || c.id?.startsWith('c3333333');
+    const isMockCmp = c.meta_campaign_id?.startsWith('cmp_test_8819201') || c.meta_campaign_id?.startsWith('cmp_scale1_9918234') || c.meta_campaign_id?.startsWith('cmp_scale2_7726315');
+    const isMockName = c.name?.includes('Anti-Acne Clarifying') || c.name?.includes('Alpha Masculine') || c.name?.includes('Deep Exfoliating Back');
+    return !isMockId && !isMockCmp && !isMockName;
+  });
+}
+
+// Bersihkan juga default fake account ID jika ada
+if (localStorage.getItem('metasync_meta_account') === 'act_fatherlab_live_01') {
+  localStorage.removeItem('metasync_meta_account');
+}
 
 const supabaseUrl = ref(localStorage.getItem(STORAGE_KEYS.URL) || import.meta.env.VITE_SUPABASE_URL || '');
 const supabaseKey = ref(localStorage.getItem(STORAGE_KEYS.KEY) || import.meta.env.VITE_SUPABASE_ANON_KEY || '');
@@ -31,14 +46,18 @@ export function getSupabaseClient() {
 }
 
 export function useSupabase() {
-  const cachedCampaigns = localStorage.getItem('metasync_campaigns_cache');
-  if (!cachedCampaigns) {
-    try {
-      localStorage.setItem('metasync_campaigns_cache', JSON.stringify(INITIAL_CAMPAIGNS));
-    } catch (e) {}
+  const rawCached = localStorage.getItem('metasync_campaigns_cache');
+  let parsedCached = [];
+  try {
+    parsedCached = rawCached ? JSON.parse(rawCached) : [];
+  } catch (e) {
+    parsedCached = [];
   }
-  const campaigns = ref(JSON.parse(cachedCampaigns || 'null') || INITIAL_CAMPAIGNS);
-  const creativeAssets = ref(INITIAL_CREATIVE_ASSETS);
+  const initialClean = sanitizeCampaigns(parsedCached);
+  localStorage.setItem('metasync_campaigns_cache', JSON.stringify(initialClean));
+
+  const campaigns = ref(initialClean);
+  const creativeAssets = ref([]);
   const isConnected = ref(Boolean(supabaseUrl.value && supabaseKey.value));
   const isLoading = ref(false);
   const error = ref(null);
@@ -97,8 +116,22 @@ export function useSupabase() {
       if (fetchErr) throw fetchErr;
 
       if (data && data.length > 0) {
+        // Filter out legacy sample campaigns that might have been seeded to Supabase
+        const cleanRemote = data.filter(camp => {
+          const isSample = camp.meta_campaign_id === 'cmp_test_8819201' || 
+                           camp.meta_campaign_id === 'cmp_scale1_9918234' || 
+                           camp.meta_campaign_id === 'cmp_scale2_7726315' ||
+                           camp.name?.includes('Anti-Acne Clarifying') ||
+                           camp.name?.includes('Alpha Masculine') ||
+                           camp.name?.includes('Deep Exfoliating Back');
+          return !isSample;
+        });
+
+        // Background cleanup of sample rows in Supabase
+        client.from('campaigns').delete().in('meta_campaign_id', ['cmp_test_8819201', 'cmp_scale1_9918234', 'cmp_scale2_7726315']).then(() => {}).catch(() => {});
+
         // Transform Supabase structure into convenient format
-        const incoming = data.map(camp => ({
+        const incoming = cleanRemote.map(camp => ({
           ...camp,
           base_price: Number(camp.base_price || 0),
           cogs: Number(camp.cogs || 0),
@@ -124,9 +157,12 @@ export function useSupabase() {
         }));
         
         // Anti-Reset Sentinel: Safe Merge to protect locally created campaigns
-        campaigns.value = safeMergeCampaigns(campaigns.value, incoming);
+        campaigns.value = sanitizeCampaigns(safeMergeCampaigns(campaigns.value, incoming));
         localStorage.setItem('metasync_campaigns_cache', JSON.stringify(campaigns.value));
         createDataSnapshot('Auto-Sync Merge');
+      } else {
+        campaigns.value = sanitizeCampaigns(campaigns.value);
+        localStorage.setItem('metasync_campaigns_cache', JSON.stringify(campaigns.value));
       }
       return campaigns.value;
     } catch (err) {
@@ -273,12 +309,41 @@ export function useSupabase() {
     }
   };
 
+  // Dynamic Historical Chart Data calculated strictly from real campaigns
+  const historicalChartData = computed(() => {
+    if (!campaigns.value || campaigns.value.length === 0) {
+      return [
+        { date: 'Hari Ini', spend: 0, revenue: 0, netProfit: 0, roas: 0, cpr: 0 }
+      ];
+    }
+
+    let totalSpend = 0;
+    let totalRevenue = 0;
+    let totalPurchases = 0;
+
+    campaigns.value.forEach(c => {
+      (c.adsets || []).forEach(a => {
+        totalSpend += Number(a.metrics?.spend || 0);
+        totalRevenue += Number(a.metrics?.revenue || 0);
+        totalPurchases += Number(a.metrics?.purchases || 0);
+      });
+    });
+
+    const netProfit = totalRevenue - totalSpend;
+    const roas = totalSpend > 0 ? Number((totalRevenue / totalSpend).toFixed(2)) : 0;
+    const cpr = totalPurchases > 0 ? Math.round(totalSpend / totalPurchases) : 0;
+
+    return [
+      { date: 'Hari Ini', spend: totalSpend, revenue: totalRevenue, netProfit, roas, cpr }
+    ];
+  });
+
   const saveCopywritingLog = saveHypnowritingLog;
 
   return {
     campaigns,
     creativeAssets,
-    historicalChartData: HISTORICAL_CHART_DATA,
+    historicalChartData,
     isConnected,
     isLoading,
     error,

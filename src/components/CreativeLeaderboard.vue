@@ -33,8 +33,22 @@
       </div>
     </div>
 
+    <!-- Empty State -->
+    <div 
+      v-if="rankedAssets.length === 0" 
+      class="hud-panel p-12 text-center flex flex-col items-center justify-center font-mono space-y-3 border-cyan-500/20"
+    >
+      <div class="w-12 h-12 bg-dark-950 border border-dark-800 flex items-center justify-center text-slate-500 shadow-glow-cyan">
+        <Trophy class="w-6 h-6 text-slate-600" />
+      </div>
+      <h3 class="text-xs font-bold text-slate-300 tracking-wider">[ TIDAK ADA ASET KREATIF // MENUNGGU SINKRONISASI ]</h3>
+      <p class="text-[11px] text-slate-500 max-w-md leading-relaxed">
+        Seluruh data sampel telah dihapus. Aset kreatif (gambar & video iklan) akan terindeks dan diperingkat secara otomatis setelah kampanye Meta Ads aktif tersinkronisasi.
+      </p>
+    </div>
+
     <!-- Ranked Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       <div
         v-for="(item, index) in rankedAssets"
         :key="item.id"
