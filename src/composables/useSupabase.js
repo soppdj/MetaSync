@@ -57,10 +57,58 @@ export function useSupabase() {
   localStorage.setItem('metasync_campaigns_cache', JSON.stringify(initialClean));
 
   const campaigns = ref(initialClean);
-  const creativeAssets = ref([]);
+
+  // Cache & State untuk Creative Leaderboard
+  const rawCreativesCache = localStorage.getItem('metasync_creatives_cache');
+  let parsedCreatives = [];
+  try {
+    parsedCreatives = rawCreativesCache ? JSON.parse(rawCreativesCache) : [];
+  } catch (e) {
+    parsedCreatives = [];
+  }
+  const creativeAssets = ref(parsedCreatives);
+
+  // Hidden / Deleted Campaign IDs (Disimpan agar campaign lama tidak muncul lagi)
+  const HIDDEN_CAMPAIGNS_KEY = 'metasync_hidden_campaigns';
+  const rawHidden = localStorage.getItem(HIDDEN_CAMPAIGNS_KEY);
+  let parsedHidden = [];
+  try {
+    parsedHidden = rawHidden ? JSON.parse(rawHidden) : [];
+  } catch (e) {
+    parsedHidden = [];
+  }
+  const hiddenCampaignIds = ref(new Set(parsedHidden));
+
   const isConnected = ref(Boolean(supabaseUrl.value && supabaseKey.value));
   const isLoading = ref(false);
   const error = ref(null);
+
+  // Sembunyikan / Hapus campaign dari tampilan
+  const hideCampaign = (idOrMetaId) => {
+    if (!idOrMetaId) return;
+    hiddenCampaignIds.value.add(String(idOrMetaId));
+    localStorage.setItem(HIDDEN_CAMPAIGNS_KEY, JSON.stringify([...hiddenCampaignIds.value]));
+  };
+
+  // Pulihkan campaign yang disembunyikan
+  const unhideCampaign = (idOrMetaId) => {
+    if (!idOrMetaId) return;
+    hiddenCampaignIds.value.delete(String(idOrMetaId));
+    localStorage.setItem(HIDDEN_CAMPAIGNS_KEY, JSON.stringify([...hiddenCampaignIds.value]));
+  };
+
+  // Pulihkan semua campaign
+  const unhideAllCampaigns = () => {
+    hiddenCampaignIds.value.clear();
+    localStorage.removeItem(HIDDEN_CAMPAIGNS_KEY);
+  };
+
+  // Ingest Creative Assets dari Meta Graph
+  const ingestLiveMetaCreatives = (incomingCreatives) => {
+    if (!Array.isArray(incomingCreatives)) return;
+    creativeAssets.value = incomingCreatives;
+    localStorage.setItem('metasync_creatives_cache', JSON.stringify(incomingCreatives));
+  };
 
   // Save Settings to LocalStorage
   const updateSettings = (config) => {
@@ -380,6 +428,11 @@ export function useSupabase() {
   return {
     campaigns,
     creativeAssets,
+    hiddenCampaignIds,
+    hideCampaign,
+    unhideCampaign,
+    unhideAllCampaigns,
+    ingestLiveMetaCreatives,
     historicalChartData,
     isConnected,
     isLoading,

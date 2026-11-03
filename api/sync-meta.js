@@ -83,6 +83,7 @@ export default async function handler(req, res) {
     let metricsData = [];
     let rawCampaigns = [];
     let rawAdsets = [];
+    let rawAds = [];
 
     // 1. If Meta credentials are provided, call Meta Graph API v21.0
     if (META_TOKEN && AD_ACCOUNT_ID) {
@@ -151,6 +152,18 @@ export default async function handler(req, res) {
         }
       } catch (e) {
         console.warn('Insights fetch warning:', e);
+      }
+
+      // 1D. Fetch Ads & Creatives
+      try {
+        const adsUrl = `https://graph.facebook.com/v21.0/${AD_ACCOUNT_ID}/ads?fields=id,name,status,effective_status,adset_id,adset{name},creative{id,name,title,body,image_url,thumbnail_url,object_story_spec},insights{spend,impressions,clicks,cpc,cpm,ctr,actions,action_values}&limit=50&access_token=${META_TOKEN}`;
+        const adsRes = await fetch(adsUrl);
+        const adsJson = await adsRes.json();
+        if (adsJson.data && Array.isArray(adsJson.data)) {
+          rawAds = adsJson.data;
+        }
+      } catch (e) {
+        console.warn('Ads fetch warning:', e);
       }
     }
 
@@ -313,12 +326,100 @@ export default async function handler(req, res) {
       }
     }
 
+    // 4. Assembling Creative Leaderboard Assets dari Meta Ads v21.0
+    let assembledCreatives = (rawAds || []).map(ad => {
+      const cr = ad.creative || {};
+      const oss = cr.object_story_spec || {};
+      const linkData = oss.link_data || {};
+      const videoData = oss.video_data || {};
+
+      const isVideo = Boolean(videoData.video_id || videoData.image_url || ad.name?.toLowerCase().includes('vid') || ad.name?.toLowerCase().includes('video'));
+      const type = isVideo ? 'video' : 'image';
+
+      const thumb = cr.thumbnail_url || cr.image_url || videoData.image_url || linkData.picture || '';
+      const headline = cr.title || linkData.name || videoData.title || ad.name || 'Ad Creative';
+      const primaryText = cr.body || linkData.message || videoData.message || '';
+
+      const insight = (ad.insights && ad.insights.data && ad.insights.data[0]) || {};
+      const actions = insight.actions || [];
+      const actionValues = insight.action_values || [];
+
+      const getActionCount = (actionType) => {
+        const found = actions.find(a => a.action_type === actionType);
+        return found ? parseInt(found.value, 10) : 0;
+      };
+      const getActionValue = (actionType) => {
+        const found = actionValues.find(a => a.action_type === actionType);
+        return found ? parseFloat(found.value) : 0;
+      };
+
+      const purchases = getActionCount('purchase') || getActionCount('omni_purchase') || 0;
+      const revenue = getActionValue('purchase') || getActionValue('omni_purchase') || 0;
+      const spend = parseFloat(insight.spend || 0);
+      const clicks = parseInt(insight.clicks || 0, 10);
+      const impressions = parseInt(insight.impressions || 0, 10);
+      const ctr = impressions > 0 ? (clicks / impressions) * 100 : parseFloat(insight.ctr || 0);
+      const cpc = clicks > 0 ? spend / clicks : parseFloat(insight.cpc || 0);
+      const cpr = purchases > 0 ? spend / purchases : spend;
+      const roas = spend > 0 ? revenue / spend : 0;
+
+      return {
+        id: ad.id,
+        name: ad.name,
+        adset_id: ad.adset_id,
+        adset_name: ad.adset?.name || 'AdSet Utama',
+        type,
+        url: thumb,
+        thumbnail_url: thumb,
+        headline,
+        primary_text: primaryText,
+        total_spend: spend,
+        total_clicks: clicks,
+        total_impressions: impressions,
+        total_purchases: purchases,
+        ctr,
+        cpc,
+        cpr,
+        roas
+      };
+    });
+
+    if (assembledCreatives.length === 0 && assembledCampaigns.length > 0) {
+      assembledCampaigns.forEach(c => {
+        (c.adsets || []).forEach(a => {
+          const isVideo = a.name.toLowerCase().includes('vid') || a.name.toLowerCase().includes('video');
+          const ctr = a.metrics.impressions > 0 ? (a.metrics.clicks / a.metrics.impressions) * 100 : 0;
+          const cpr = a.metrics.purchases > 0 ? a.metrics.spend / a.metrics.purchases : a.metrics.spend;
+          const roas = a.metrics.spend > 0 ? a.metrics.revenue / a.metrics.spend : 0;
+          assembledCreatives.push({
+            id: a.id || a.meta_adset_id,
+            name: a.name,
+            adset_name: a.name,
+            type: isVideo ? 'video' : 'image',
+            url: '',
+            thumbnail_url: '',
+            headline: `${c.name}`,
+            primary_text: `Kreatif visual resmi kampanye ${c.name} (${a.name}).`,
+            total_spend: a.metrics.spend,
+            total_clicks: a.metrics.clicks,
+            total_impressions: a.metrics.impressions,
+            total_purchases: a.metrics.purchases,
+            ctr,
+            cpc: a.metrics.clicks > 0 ? a.metrics.spend / a.metrics.clicks : 0,
+            cpr,
+            roas
+          });
+        });
+      });
+    }
+
     return res.status(200).json({
       success: true,
       mode: META_TOKEN ? 'LIVE_META_API (v21.0)' : 'OFFLINE',
       account_id: AD_ACCOUNT_ID,
       recordsProcessed: metricsData.length,
       campaigns: assembledCampaigns,
+      creatives: assembledCreatives,
       metrics: metricsData,
       timestamp: new Date().toISOString()
     });

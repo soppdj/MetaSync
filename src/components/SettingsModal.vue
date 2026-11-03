@@ -38,7 +38,7 @@
           <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 font-mono">
               <Database class="w-4 h-4 text-emerald-400" />
-              1. Supabase (Database & Realtime)
+              1. SUPABASE
             </span>
             <div class="flex items-center gap-2">
               <button
@@ -160,7 +160,7 @@
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 font-mono">
               <Facebook class="w-4 h-4 text-blue-400" />
-              2. Meta Graph API (Marketing API v21.0)
+              2. META GRAPH API
             </span>
             <span class="text-[10px] text-blue-300 font-mono font-bold bg-blue-950/60 px-2 py-0.5 border border-blue-500/30 rounded">ads_read & ads_management</span>
           </div>
@@ -240,7 +240,7 @@
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 font-mono">
               <Send class="w-4 h-4 text-cyan-400" />
-              3. Telegram Bot
+              3. TELEGRAM BOT
             </span>
             <span class="text-[10px] text-cyan-300 font-mono font-bold bg-cyan-950/60 px-2 py-0.5 border border-cyan-500/30 rounded">Alerts & Kill AdSet</span>
           </div>
@@ -353,7 +353,7 @@
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 font-mono">
               <Sparkles class="w-4 h-4 text-teal-400" />
-              4. Google Gemini API (AI Studio)
+              4. GOOGLE GEMINI API
             </span>
             <span class="text-[10px] text-teal-300 font-mono font-bold bg-teal-950/60 px-2 py-0.5 border border-teal-500/30 rounded">Gemini 1.5 Pro / Flash</span>
           </div>
@@ -408,32 +408,32 @@
         </div>
 
         <!-- ========================================================
-             5. PASSWORD KHUSUS ADMIN (MASTER PASSKEY)
+             5. PASSWORD KHUSUS ADMIN (PIN 000000)
              ======================================================== -->
         <div class="space-y-3 p-4 sm:p-5 rounded-2xl bg-dark-850 border border-dark-750 hover:border-copper-500/40 transition-all">
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 font-mono">
               <KeyRound class="w-4 h-4 text-copper-400" />
-              5. Password Khusus Admin
+              5. PASSWORD KHUSUS ADMIN
             </span>
             <button
               type="button"
-              @click="form.adminPassword = 'fatherlab2026'"
+              @click="form.adminPassword = '000000'"
               class="text-[10px] text-copper-400 hover:text-copper-300 font-mono font-bold hover:underline"
             >
-              Reset ke Default
+              Reset ke Default (000000)
             </button>
           </div>
 
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-slate-400 font-semibold">Kunci Sandi Admin (Terminal Passkey)</label>
-              <span class="text-[10px] text-slate-500">Default: <code>fatherlab2026</code></span>
+              <label class="block text-slate-400 font-semibold">PIN Sandi Admin</label>
+              <span class="text-[10px] text-slate-500">Default: <code>000000</code></span>
             </div>
             <input
               v-model="form.adminPassword"
               type="text"
-              placeholder="fatherlab2026"
+              placeholder="000000"
               class="w-full px-3.5 py-2.5 rounded-xl bg-dark-800 border border-dark-700 text-cyan-300 font-mono focus:outline-none focus:border-copper-500 transition-all text-xs font-bold"
             />
             <span class="text-[10px] text-slate-500 mt-1 block">Digunakan untuk membuka akses login terminal animasi MetaSync.</span>
@@ -523,7 +523,7 @@ const form = ref({
   telegramToken: props.initialSettings.telegramToken || '',
   telegramChat: props.initialSettings.telegramChat || '',
   geminiKey: props.initialSettings.geminiKey || '',
-  adminPassword: activeMasterPassword.value || 'fatherlab2026'
+  adminPassword: activeMasterPassword.value || '000000'
 });
 
 // Show / Hide Password Toggles

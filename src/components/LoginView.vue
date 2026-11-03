@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="fixed inset-0 z-50 overflow-hidden flex items-center justify-center bg-[#040711] text-slate-100 font-mono select-none"
+    class="fixed inset-0 z-50 overflow-hidden flex items-center justify-center bg-[#040711] text-slate-100 font-mono select-none px-4 py-6"
     :class="{ 'opacity-0 scale-105 pointer-events-none transition-all duration-700': isUnlocked }"
   >
     <!-- ==========================================
@@ -11,7 +11,7 @@
     <div class="absolute inset-0 pointer-events-none opacity-40 bg-[linear-gradient(to_right,rgba(0,240,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,240,255,0.06)_1px,transparent_1px),linear-gradient(to_right,rgba(36,55,85,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(36,55,85,0.2)_1px,transparent_1px)] bg-[size:120px_120px,120px_120px,24px_24px,24px_24px]"></div>
 
     <!-- 2. Concentric Orbital HUD Rings & Radar Sweep (SVG) -->
-    <div class="absolute w-[800px] h-[800px] pointer-events-none opacity-25 flex items-center justify-center">
+    <div class="absolute w-[720px] h-[720px] pointer-events-none opacity-20 flex items-center justify-center">
       <!-- Outer Orbit Ring with Degree Markers -->
       <svg class="w-full h-full animate-orbit" viewBox="0 0 800 800">
         <circle cx="400" cy="400" r="380" fill="none" stroke="#00F0FF" stroke-width="1" stroke-dasharray="8 12" opacity="0.6"/>
@@ -26,20 +26,20 @@
       </svg>
 
       <!-- Reverse Inner Orbit Ring -->
-      <svg class="absolute w-[500px] h-[500px] animate-orbit-reverse" viewBox="0 0 500 500">
+      <svg class="absolute w-[460px] h-[460px] animate-orbit-reverse" viewBox="0 0 500 500">
         <circle cx="250" cy="250" r="240" fill="none" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="20 40" opacity="0.5"/>
         <circle cx="250" cy="250" r="180" fill="none" stroke="#00F0FF" stroke-width="0.75" stroke-dasharray="6 6" opacity="0.4"/>
       </svg>
 
       <!-- Radar Sweep Beam (Rotating 360) -->
-      <div class="absolute w-[700px] h-[700px] rounded-full animate-radar-sweep pointer-events-none opacity-20">
+      <div class="absolute w-[650px] h-[650px] rounded-full animate-radar-sweep pointer-events-none opacity-20">
         <div class="w-1/2 h-1/2 bg-gradient-to-br from-cyan-400/40 via-cyan-500/10 to-transparent origin-bottom-right rounded-tl-full"></div>
       </div>
     </div>
 
     <!-- 3. Ambient Telemetry Data Columns (Kiri & Kanan Layar) -->
-    <div class="hidden lg:flex flex-col justify-between absolute left-8 top-16 bottom-16 w-64 pointer-events-none text-[10px] text-slate-500 leading-relaxed font-mono">
-      <div class="space-y-2 border-l border-cyan-500/30 pl-3">
+    <div class="hidden xl:flex flex-col justify-between absolute left-8 top-16 bottom-16 w-60 pointer-events-none text-[10px] text-slate-500 leading-relaxed font-mono">
+      <div class="space-y-1.5 border-l border-cyan-500/30 pl-3">
         <div class="text-cyan-400 font-bold tracking-widest">[ SYS_TELEMETRY ]</div>
         <div>HOST: <span class="text-slate-300">metasync.internal</span></div>
         <div>IP_NODE: <span class="text-slate-300">10.240.18.92</span></div>
@@ -48,7 +48,7 @@
         <div>TLS_SESSION: <span class="text-emerald-400">ACTIVE // TLS 1.3</span></div>
       </div>
 
-      <div class="space-y-1.5 opacity-60">
+      <div class="space-y-1 opacity-60">
         <div class="text-[9px] text-cyan-400 font-bold">STREAM BUFFER:</div>
         <div class="text-[9px] text-slate-400 truncate">01000110 01000001 01010100</div>
         <div class="text-[9px] text-slate-400 truncate">01001000 01000101 01010010</div>
@@ -56,8 +56,8 @@
       </div>
     </div>
 
-    <div class="hidden lg:flex flex-col justify-between absolute right-8 top-16 bottom-16 w-64 pointer-events-none text-[10px] text-slate-500 leading-relaxed font-mono text-right">
-      <div class="space-y-2 border-r border-copper-500/40 pr-3">
+    <div class="hidden xl:flex flex-col justify-between absolute right-8 top-16 bottom-16 w-60 pointer-events-none text-[10px] text-slate-500 leading-relaxed font-mono text-right">
+      <div class="space-y-1.5 border-r border-copper-500/40 pr-3">
         <div class="text-copper-400 font-bold tracking-widest">[ SECURITY_MATRIX ]</div>
         <div>DEFCON: <span class="text-emerald-400">LEVEL 5 (NORMAL)</span></div>
         <div>ORBIT_LATENCY: <span class="text-cyan-300">{{ pingLatency }} ms</span></div>
@@ -65,16 +65,16 @@
         <div>SENTINEL_GUARD: <span class="text-emerald-400">ARMED</span></div>
       </div>
 
-      <div class="space-y-1.5 opacity-60">
+      <div class="space-y-1 opacity-60">
         <div class="text-[9px] text-copper-400 font-bold">TARGET DATASET:</div>
-        <div class="text-[9px] text-slate-400">META_GRAPH_V20: ONLINE</div>
+        <div class="text-[9px] text-slate-400">META_GRAPH_V21: ONLINE</div>
         <div class="text-[9px] text-slate-400">SUPABASE_PG15: CONNECTED</div>
         <div class="text-[9px] text-slate-400">GEMINI_1.5_PRO: STREAMING</div>
       </div>
     </div>
 
     <!-- 4. Top Telemetry Bar -->
-    <header class="absolute top-0 left-0 right-0 h-11 border-b border-cyan-500/20 bg-[#060a14]/90 px-6 flex items-center justify-between z-20">
+    <header class="absolute top-0 left-0 right-0 h-10 border-b border-cyan-500/20 bg-[#060a14]/90 px-6 flex items-center justify-between z-20">
       <div class="flex items-center gap-3 text-xs">
         <span class="flex h-2 w-2 relative">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
@@ -97,7 +97,7 @@
         <!-- Audio Mute Toggle Button -->
         <button 
           @click="toggleAudio" 
-          class="flex items-center gap-1 px-2 py-1 rounded bg-dark-900 border border-cyan-500/30 text-slate-400 hover:text-cyan-300 hover:border-cyan-400 transition-all text-[10px]"
+          class="flex items-center gap-1 px-2 py-0.5 rounded bg-dark-900 border border-cyan-500/30 text-slate-400 hover:text-cyan-300 hover:border-cyan-400 transition-all text-[10px]"
           :title="isMuted ? 'Aktifkan Efek Suara HUD' : 'Matikan Efek Suara HUD'"
         >
           <Volume2 v-if="!isMuted" class="w-3.5 h-3.5 text-cyan-400" />
@@ -109,13 +109,14 @@
 
     <!-- ==========================================
          CENTRAL INTERACTIVE SCI-FI TERMINAL BOX
+         (COMPACT & VIEWPORT OPTIMIZED AT 100% ZOOM)
          ========================================== -->
     <div 
-      class="relative z-20 w-full max-w-[500px] mx-4 transition-all duration-300"
+      class="relative z-20 w-full max-w-[460px] mx-auto transition-all duration-300 my-auto max-h-[calc(100vh-4.5rem)] overflow-y-auto custom-scrollbar"
       :class="{ 'animate-cyber-shake': isShaking }"
     >
       <!-- HUD Panel Box with Cyber Angles -->
-      <div class="hud-panel hud-corner hud-crosshair p-6 sm:p-8 bg-[#070c17]/95 border-2 shadow-glow-cyan relative overflow-hidden"
+      <div class="hud-panel hud-corner hud-crosshair p-5 sm:p-6 bg-[#070c17]/95 border-2 shadow-glow-cyan relative overflow-hidden"
         :class="[
           authStatus === 'error' ? 'border-rose-500/80 shadow-glow-rose' :
           authStatus === 'success' ? 'border-emerald-400/90 shadow-glow-teal' :
@@ -126,12 +127,12 @@
         <div class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50 animate-cyber-scan pointer-events-none"></div>
 
         <!-- Terminal Header & MetaSync Logo -->
-        <div class="flex flex-col items-center text-center mb-6">
+        <div class="flex flex-col items-center text-center mb-4">
           
           <!-- Animated Meta Infinity Logo Box -->
-          <div class="relative flex items-center justify-center w-16 h-16 bg-dark-950 border border-cyan-400 shadow-glow-cyan p-1 shrink-0 mb-3.5 hud-corner group">
+          <div class="relative flex items-center justify-center w-12 h-12 bg-dark-950 border border-cyan-400 shadow-glow-cyan p-1 shrink-0 mb-2 hud-corner group">
             <div class="w-full h-full bg-[#080e1c] flex items-center justify-center overflow-hidden relative">
-              <svg class="w-9 h-9 transition-transform group-hover:scale-110" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg class="w-7 h-7 transition-transform group-hover:scale-110" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <linearGradient id="metaGradLogin" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#00F0FF" />
@@ -140,29 +141,23 @@
                   </linearGradient>
                 </defs>
                 <path d="M10 12C6.8 12 4.2 14.6 4.2 18C4.2 21.4 6.8 24 10 24C13.2 24 16 21.3 17.8 18C19.6 14.7 22.4 12 25.6 12C28.8 12 31.4 14.6 31.4 18C31.4 21.4 28.8 24 25.6 24C22.4 24 19.6 20.7 17.8 18C16 15.3 13.2 12 10 12Z" stroke="url(#metaGradLogin)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="17.8" cy="18" r="2.2" fill="#00F0FF" class="animate-pulse" />
+                <circle cx="17.8" cy="18" r="2" fill="#00F0FF" class="animate-pulse" />
               </svg>
             </div>
           </div>
 
           <!-- Brand & Terminal Title -->
-          <h1 class="text-lg sm:text-xl font-black tracking-wider text-white flex items-center gap-2">
-            <span>METASYNC COMMAND TERMINAL</span>
+          <h1 class="text-base sm:text-lg font-black tracking-wider text-white flex items-center gap-2">
+            <span>METASYNC TERMINAL</span>
           </h1>
-          <p class="text-xs text-slate-400 mt-1">
-            FatherLab Direct-Response Operations &bull; <span class="text-copper-400 font-bold">Admin Portal</span>
+          <p class="text-[11px] text-slate-400 mt-0.5">
+            FatherLab Direct-Response Operations
           </p>
-
-          <!-- Security Level Pill -->
-          <div class="mt-3 flex items-center gap-2 px-3 py-1 bg-dark-900 border border-cyan-500/30 text-[10px] text-cyan-300 font-bold tracking-widest">
-            <ShieldAlert class="w-3 h-3 text-copper-400" />
-            <span>SEC_LEVEL: ALPHA-01 // ENCRYPTED</span>
-          </div>
         </div>
 
         <!-- System Handshake Status Indicator -->
         <div 
-          class="mb-5 p-2.5 border text-[11px] font-bold flex items-center justify-between transition-all"
+          class="mb-4 p-2 border text-[11px] font-bold flex items-center justify-between transition-all"
           :class="[
             authStatus === 'error' ? 'bg-rose-950/60 border-rose-500/60 text-rose-300' :
             authStatus === 'success' ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-300' :
@@ -187,19 +182,16 @@
         </div>
 
         <!-- ==========================================
-             FORM LOGIN (CALL-SIGN & PASSWORD ADMIN)
+             FORM LOGIN (ADMIN & PIN KHUSUS ADMIN)
              ========================================== -->
-        <form @submit.prevent="handleFormSubmit" class="space-y-4">
+        <form @submit.prevent="handleFormSubmit" class="space-y-3.5">
           
-          <!-- Input 1: Admin Call-Sign (Username) -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between text-[11px]">
-              <label class="text-slate-300 font-bold flex items-center gap-1.5">
-                <UserCheck class="w-3.5 h-3.5 text-cyan-400" />
-                <span>ADMIN CALL-SIGN (USERNAME)</span>
-              </label>
-              <span class="text-[10px] text-slate-500">DEFAULT: admin</span>
-            </div>
+          <!-- Input 1: Admin (Otomatis Terisi Sopianto Djahar) -->
+          <div class="space-y-1">
+            <label class="text-slate-300 font-bold flex items-center gap-1.5 text-[11px]">
+              <UserCheck class="w-3.5 h-3.5 text-cyan-400" />
+              <span>ADMIN</span>
+            </label>
 
             <div class="relative">
               <input
@@ -207,16 +199,16 @@
                 type="text"
                 required
                 autocomplete="username"
-                placeholder="Masukkan call-sign (admin / soppdj)..."
+                placeholder="Sopianto Djahar"
                 @input="playKeySound"
                 :disabled="isAuthenticating || isUnlocked"
-                class="w-full px-3.5 py-2.5 bg-dark-900 border border-cyan-500/30 text-white text-xs font-mono tracking-wider focus:outline-none focus:border-cyan-400 focus:shadow-glow-cyan transition-all disabled:opacity-50"
+                class="w-full px-3 py-2 bg-dark-900 border border-cyan-500/30 text-white text-xs font-mono tracking-wider focus:outline-none focus:border-cyan-400 focus:shadow-glow-cyan transition-all disabled:opacity-50"
               />
             </div>
           </div>
 
-          <!-- Input 2: Password Khusus Admin -->
-          <div class="space-y-1.5">
+          <!-- Input 2: Password Khusus Admin (PIN: 000000) -->
+          <div class="space-y-1">
             <div class="flex items-center justify-between text-[11px]">
               <label class="text-slate-300 font-bold flex items-center gap-1.5">
                 <KeyRound class="w-3.5 h-3.5 text-copper-400" />
@@ -239,10 +231,10 @@
                 :type="showPassword ? 'text' : 'password'"
                 required
                 autocomplete="current-password"
-                placeholder="Masukkan password khusus admin..."
+                placeholder="Masukkan PIN admin (000000)..."
                 @input="playKeySound"
                 :disabled="isAuthenticating || isUnlocked"
-                class="w-full px-3.5 py-2.5 bg-dark-900 border border-cyan-500/30 text-white text-xs font-mono tracking-wider focus:outline-none focus:border-copper-400 focus:shadow-glow-copper transition-all disabled:opacity-50 pr-10"
+                class="w-full px-3 py-2 bg-dark-900 border border-cyan-500/30 text-white text-xs font-mono tracking-wider focus:outline-none focus:border-copper-400 focus:shadow-glow-copper transition-all disabled:opacity-50 pr-10"
               />
               <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
                 <Lock class="w-4 h-4 text-slate-600" />
@@ -250,64 +242,47 @@
             </div>
 
             <!-- Passkey Strength / Armed Indicator -->
-            <div class="flex items-center gap-1 pt-1">
+            <div class="flex items-center gap-1 pt-0.5">
               <div class="flex-1 h-1 bg-dark-800 rounded-sm overflow-hidden">
                 <div 
                   class="h-full transition-all duration-300"
                   :class="[
                     password.length === 0 ? 'w-0' :
                     password.length < 4 ? 'w-1/4 bg-rose-500' :
-                    password.length < 8 ? 'w-2/4 bg-amber-500' :
+                    password.length < 6 ? 'w-2/4 bg-amber-500' :
                     'w-full bg-cyan-400'
                   ]"
                 ></div>
               </div>
               <span class="text-[9px] text-slate-500">
-                {{ password.length >= 8 ? 'ARMED' : password.length > 0 ? 'READY' : 'EMPTY' }}
+                {{ password.length >= 6 ? 'ARMED' : password.length > 0 ? 'READY' : 'EMPTY' }}
               </span>
             </div>
-          </div>
-
-          <!-- Quick Credential Helper Pill (Memudahkan Pengguna Mengakses) -->
-          <div class="p-2.5 bg-dark-950/80 border border-cyan-500/20 text-[10px] flex items-center justify-between text-slate-400">
-            <div class="flex items-center gap-1.5">
-              <Terminal class="w-3 h-3 text-cyan-400 shrink-0" />
-              <span class="truncate">Master Key: <code class="text-cyan-300 font-bold bg-dark-900 px-1 py-0.5 border border-cyan-500/30">{{ activeMasterPassword }}</code></span>
-            </div>
-            <button
-              type="button"
-              @click="autofillDefaultCredentials"
-              :disabled="isAuthenticating || isUnlocked"
-              class="px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:border-cyan-300 transition-all text-[9px] font-bold shrink-0"
-              title="Isi otomatis username & password admin"
-            >
-              1-Klik Pasang
-            </button>
           </div>
 
           <!-- Submit Button: OTORISASI AKSES -->
           <button
             type="submit"
             :disabled="isAuthenticating || isUnlocked"
-            class="w-full relative group overflow-hidden py-3 px-4 bg-gradient-to-r from-cyan-400 via-brand-500 to-copper-500 text-dark-950 font-black text-xs uppercase tracking-widest transition-all duration-200 shadow-glow-cyan hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+            class="w-full relative group overflow-hidden py-2.5 px-4 bg-gradient-to-r from-cyan-400 via-brand-500 to-copper-500 text-dark-950 font-black text-xs uppercase tracking-widest transition-all duration-200 shadow-glow-cyan hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-1"
           >
             <!-- Animated Loading Spinner or Lock Icon -->
-            <RefreshCw v-if="isAuthenticating" class="w-4 h-4 animate-spin text-dark-950" />
-            <Unlock v-else-if="authStatus === 'success'" class="w-4 h-4 text-dark-950" />
-            <ShieldCheck v-else class="w-4 h-4 text-dark-950 group-hover:scale-110 transition-transform" />
+            <RefreshCw v-if="isAuthenticating" class="w-3.5 h-3.5 animate-spin text-dark-950" />
+            <Unlock v-else-if="authStatus === 'success'" class="w-3.5 h-3.5 text-dark-950" />
+            <ShieldCheck v-else class="w-3.5 h-3.5 text-dark-950 group-hover:scale-110 transition-transform" />
 
             <span>{{ buttonText }}</span>
           </button>
 
-          <!-- 1-Click Biometric / TouchID Passkey (Simulation) -->
-          <div class="pt-2 border-t border-cyan-500/15 flex items-center justify-between">
+          <!-- 1-Click Biometric / TouchID Passkey -->
+          <div class="pt-2 border-t border-cyan-500/15">
             <button
               type="button"
               @click="handleBiometricAccess"
               :disabled="isAuthenticating || isUnlocked"
-              class="w-full py-2 px-3 bg-dark-900/90 hover:bg-dark-850 border border-dark-750 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 text-[11px] font-bold flex items-center justify-center gap-2 transition-all"
+              class="w-full py-1.5 px-3 bg-dark-900/90 hover:bg-dark-850 border border-dark-750 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 text-[11px] font-bold flex items-center justify-center gap-2 transition-all"
             >
-              <Fingerprint class="w-4 h-4 text-cyan-400 animate-pulse" />
+              <Fingerprint class="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
               <span>⚡ Otorisasi Cepat via Biometrik (Passkey)</span>
             </button>
           </div>
@@ -315,7 +290,7 @@
         </form>
 
         <!-- Segmented Tech Divider & Reticles -->
-        <div class="hud-divider my-4"></div>
+        <div class="hud-divider my-3"></div>
 
         <!-- Footer Card Status -->
         <div class="flex items-center justify-between text-[9px] text-slate-500">
@@ -330,7 +305,7 @@
     <!-- ==========================================
          BOTTOM TELEMETRY STATUS BAR
          ========================================== -->
-    <footer class="absolute bottom-0 left-0 right-0 h-9 border-t border-cyan-500/20 bg-[#060a14]/90 px-6 flex items-center justify-between text-[10px] text-slate-500 z-20">
+    <footer class="absolute bottom-0 left-0 right-0 h-8 border-t border-cyan-500/20 bg-[#060a14]/90 px-6 flex items-center justify-between text-[10px] text-slate-500 z-20">
       <div class="flex items-center gap-3">
         <span class="text-cyan-400 font-bold">STATUS:</span>
         <span class="text-slate-300">ONLINE</span>
@@ -353,7 +328,6 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { 
   ShieldCheck, 
-  ShieldAlert, 
   KeyRound, 
   UserCheck, 
   Lock, 
@@ -363,7 +337,6 @@ import {
   Clock, 
   Volume2, 
   VolumeX, 
-  Terminal, 
   RefreshCw,
   Fingerprint
 } from 'lucide-vue-next';
@@ -374,9 +347,9 @@ const emit = defineEmits(['login-success']);
 
 const { login, biometricLogin, activeMasterPassword } = useAuth();
 
-// Form State
-const username = ref('admin');
-const password = ref('');
+// Form State: Otomatis terisi 'Sopianto Djahar' dan PIN default '000000'
+const username = ref('Sopianto Djahar');
+const password = ref('000000');
 const showPassword = ref(false);
 
 // UI Animation States
@@ -384,9 +357,9 @@ const isAuthenticating = ref(false);
 const isUnlocked = ref(false);
 const isShaking = ref(false);
 const authStatus = ref('idle'); // idle | authenticating | success | error
-const statusMessage = ref('[ STATUS: AWAITING CREDENTIALS // PROTOCOL 808 ]');
+const statusMessage = ref('[ STATUS: AWAITING CREDENTIALS ]');
 const failedAttempts = ref(0);
-const pingLatency = ref(14);
+const pingLatency = ref(12);
 const isMuted = ref(cyberAudio.isMuted);
 
 // Live WIB Clock
@@ -419,14 +392,6 @@ const toggleAudio = () => {
   isMuted.value = cyberAudio.toggleMute();
 };
 
-// 1-Click Autofill
-const autofillDefaultCredentials = () => {
-  cyberAudio.playClick();
-  username.value = 'admin';
-  password.value = activeMasterPassword.value;
-  statusMessage.value = '[ CREDENTIALS LOADED // SIAP OTORISASI ]';
-};
-
 // Submit Handler
 const handleFormSubmit = async () => {
   if (isAuthenticating.value || isUnlocked.value) return;
@@ -434,26 +399,25 @@ const handleFormSubmit = async () => {
   cyberAudio.playClick();
   isAuthenticating.value = true;
   authStatus.value = 'authenticating';
-  statusMessage.value = '[ INITIALIZING HANDSHAKE... VERIFIKASI TOKEN ENKRIPSI ]';
+  statusMessage.value = '[ INITIALIZING HANDSHAKE... VERIFIKASI PIN ADMIN ]';
 
-  // Realistic Sci-Fi Delay (650ms) to enjoy the terminal animations
-  await new Promise(r => setTimeout(r, 650));
+  // Realistic Sci-Fi Delay (450ms)
+  await new Promise(r => setTimeout(r, 450));
 
   const result = await login(username.value, password.value);
 
   if (result.success) {
     authStatus.value = 'success';
-    statusMessage.value = `[ ACCESS GRANTED // WELCOME ${result.user?.name || 'COMMANDER'} ]`;
+    statusMessage.value = `[ ACCESS GRANTED // WELCOME ${result.user?.name || 'SOPIANTO DJAHAR'} ]`;
     cyberAudio.playAccessGranted();
 
-    // Small delay to show green success state before transition
-    await new Promise(r => setTimeout(r, 700));
+    // Transition smoothly
+    await new Promise(r => setTimeout(r, 600));
     isUnlocked.value = true;
 
-    // Transition delay into main app
     setTimeout(() => {
       emit('login-success', result.user);
-    }, 600);
+    }, 500);
   } else {
     isAuthenticating.value = false;
     authStatus.value = 'error';
@@ -476,9 +440,9 @@ const handleBiometricAccess = async () => {
   cyberAudio.playClick();
   isAuthenticating.value = true;
   authStatus.value = 'authenticating';
-  statusMessage.value = '[ SCANNING BIOMETRIC PASSKEY... TOUCH ID VERIFIED ]';
+  statusMessage.value = '[ SCANNING BIOMETRIC PASSKEY... SOPIANTO DJAHAR MATCHED ]';
 
-  await new Promise(r => setTimeout(r, 500));
+  await new Promise(r => setTimeout(r, 450));
   const result = await biometricLogin();
 
   if (result.success) {
@@ -486,12 +450,12 @@ const handleBiometricAccess = async () => {
     statusMessage.value = '[ BIOMETRIC MATCH 100% // ACCESS GRANTED ]';
     cyberAudio.playAccessGranted();
 
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 500));
     isUnlocked.value = true;
 
     setTimeout(() => {
       emit('login-success', result.user);
-    }, 600);
+    }, 500);
   } else {
     isAuthenticating.value = false;
     authStatus.value = 'error';
@@ -506,7 +470,7 @@ onMounted(() => {
 
   // Ping jitter simulation
   pingTimer = setInterval(() => {
-    pingLatency.value = Math.floor(11 + Math.random() * 6);
+    pingLatency.value = Math.floor(10 + Math.random() * 5);
   }, 4000);
 });
 

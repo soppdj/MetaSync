@@ -86,7 +86,7 @@
 
       </div>
 
-      <!-- Filter & Search Toolbar -->
+      <!-- Filter & Search Toolbar (With Campaign Hiding & Spend Filtering) -->
       <div class="mt-3 pt-3 border-t border-cyan-500/15 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div class="flex flex-wrap items-center gap-2">
           <!-- Search -->
@@ -96,7 +96,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Cari campaign / Meta ID..."
-              class="bg-dark-950 border border-dark-750 text-white pl-7 pr-3 py-1 text-xs focus:outline-none focus:border-cyan-400 w-52 sm:w-60"
+              class="bg-dark-950 border border-dark-750 text-white pl-7 pr-3 py-1 text-xs focus:outline-none focus:border-cyan-400 w-48 sm:w-56"
             />
           </div>
 
@@ -112,6 +112,55 @@
             <option value="scale1">Tahap 2: SCALE 1</option>
             <option value="scale2">Tahap 3: SCALE 2</option>
           </select>
+
+          <!-- Toggle: Hanya Spend > 0 -->
+          <button
+            type="button"
+            @click="filterOnlyActiveSpend = !filterOnlyActiveSpend"
+            class="px-2.5 py-1 text-xs font-bold border transition-all flex items-center gap-1.5"
+            :class="filterOnlyActiveSpend ? 'bg-copper-950 text-copper-300 border-copper-500/70 shadow-glow-copper' : 'bg-dark-900 text-slate-400 border-dark-750 hover:text-white'"
+            title="Sembunyikan campaign lama tanpa spend (Rp 0)"
+          >
+            <Zap class="w-3 h-3" :class="filterOnlyActiveSpend ? 'text-copper-400' : 'text-slate-500'" />
+            <span>{{ filterOnlyActiveSpend ? '⚡ Hanya Spend > 0' : 'Tampilkan Semua Spend' }}</span>
+          </button>
+
+          <!-- Sembunyikan Semua Rp 0 Permanen -->
+          <button
+            type="button"
+            @click="hideAllZeroSpendCampaigns"
+            class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-rose-300 bg-dark-900 hover:bg-rose-950/40 border border-dark-750 hover:border-rose-500/40 transition-all flex items-center gap-1"
+            title="Sembunyikan permanen seluruh campaign lama dengan Spend Rp 0"
+          >
+            <EyeOff class="w-3 h-3 text-slate-500" />
+            <span class="hidden sm:inline">Sembunyikan Semua Rp 0</span>
+          </button>
+
+          <!-- View / Restore Hidden Campaigns Button -->
+          <button
+            v-if="hiddenCampaignsCount > 0"
+            type="button"
+            @click="showHidden = !showHidden"
+            class="px-2.5 py-1 text-xs font-bold border transition-all flex items-center gap-1.5"
+            :class="showHidden ? 'bg-amber-950 text-amber-300 border-amber-500 shadow-glow-amber' : 'bg-dark-900 text-amber-400/80 border-amber-500/30 hover:border-amber-400'"
+            title="Lihat atau pulihkan campaign yang telah disembunyikan"
+          >
+            <Eye v-if="showHidden" class="w-3 h-3 text-amber-400" />
+            <EyeOff v-else class="w-3 h-3 text-amber-400" />
+            <span>{{ hiddenCampaignsCount }} Disembunyikan ({{ showHidden ? 'Tutup' : 'Lihat' }})</span>
+          </button>
+
+          <!-- Restore All Button -->
+          <button
+            v-if="showHidden && hiddenCampaignsCount > 0"
+            type="button"
+            @click="handleUnhideAll"
+            class="px-2 py-1 text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/50 hover:bg-emerald-900 transition-all flex items-center gap-1"
+            title="Pulihkan semua campaign kembali ke tabel"
+          >
+            <RotateCcw class="w-3 h-3" />
+            <span>Pulihkan Semua</span>
+          </button>
         </div>
 
         <div class="flex items-center gap-2 text-[11px] text-slate-400">
@@ -129,12 +178,13 @@
     <!-- ========================================================================= -->
     <div class="hud-panel rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse min-w-[1550px]">
+        <table class="w-full text-left text-xs border-collapse min-w-[1600px]">
           
           <!-- Table Header -->
           <thead class="bg-dark-900/95 text-slate-400 border-b border-dark-750 text-[10px] font-black uppercase tracking-wider sticky top-0 z-20">
             <tr>
               <th class="p-3 text-center w-12">STATUS</th>
+              <th class="p-3 text-center w-10">AKSI</th>
               <th class="p-3 min-w-[200px]">NAMA CAMPAIGN</th>
               <th class="p-3 min-w-[130px]">SPEND (PACING)</th>
 
@@ -187,21 +237,32 @@
           <tbody class="divide-y divide-dark-800">
             <!-- Empty State Real Data Only -->
             <tr v-if="filteredCampaigns.length === 0">
-              <td colspan="15" class="p-10 text-center text-slate-500 font-mono">
+              <td colspan="16" class="p-10 text-center text-slate-500 font-mono">
                 <div class="flex flex-col items-center justify-center space-y-2.5">
                   <div class="w-10 h-10 rounded-xl bg-dark-950 border border-dark-800 flex items-center justify-center text-slate-500">
                     <Search class="w-5 h-5" />
                   </div>
-                  <div class="text-xs font-bold text-slate-300 tracking-wider">[ TIDAK ADA KAMPANYE REAL AKTIF ]</div>
+                  <div class="text-xs font-bold text-slate-300 tracking-wider">
+                    {{ showHidden ? '[ TIDAK ADA KAMPANYE YANG DISEMBUNYIKAN ]' : (filterOnlyActiveSpend ? '[ TIDAK ADA KAMPANYE DENGAN SPEND > 0 HARI INI ]' : '[ TIDAK ADA KAMPANYE REAL AKTIF ]') }}
+                  </div>
                   <p class="text-[11px] text-slate-500 max-w-md">
-                    Seluruh sampel/dummy data telah dihapus. Silakan hubungkan Ad Account ID & Access Token di menu Pengaturan, atau buat kampanye baru untuk memantau metrik secara real.
+                    {{ showHidden ? 'Seluruh kampanye aktif ditampilkan di tabel utama.' : (filterOnlyActiveSpend ? 'Klik tombol "Tampilkan Semua Spend" untuk melihat semua kampanye termasuk yang belum berjalan hari ini.' : 'Hubungkan Ad Account ID & Access Token di menu Pengaturan untuk memuat kampanye Meta Ads.') }}
                   </p>
-                  <button
-                    @click="$emit('open-settings')"
-                    class="mt-1 px-3.5 py-1.5 text-xs font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 hover:bg-cyan-900 transition-all font-mono"
-                  >
-                    Buka Pengaturan API Meta Ads
-                  </button>
+                  <div class="flex items-center gap-2 pt-1">
+                    <button
+                      v-if="filterOnlyActiveSpend && !showHidden"
+                      @click="filterOnlyActiveSpend = false"
+                      class="px-3 py-1.5 text-xs font-bold text-copper-300 bg-copper-950/70 border border-copper-500/40 hover:bg-copper-900 transition-all font-mono"
+                    >
+                      Tampilkan Semua Campaign
+                    </button>
+                    <button
+                      @click="$emit('open-settings')"
+                      class="px-3.5 py-1.5 text-xs font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 hover:bg-cyan-900 transition-all font-mono"
+                    >
+                      Buka Pengaturan API
+                    </button>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -210,6 +271,7 @@
               v-for="camp in filteredCampaigns" 
               :key="camp.id"
               class="hover:bg-cyan-950/20 transition-colors"
+              :class="{ 'opacity-60 bg-dark-950/40': isCampaignHidden(camp) }"
             >
               <!-- STATUS TOGGLE -->
               <td class="p-3 text-center">
@@ -227,6 +289,26 @@
                 </button>
               </td>
 
+              <!-- AKSI: HAPUS / SEMBUNYIKAN / PULIHKAN -->
+              <td class="p-3 text-center">
+                <button
+                  v-if="!isCampaignHidden(camp)"
+                  @click="handleHide(camp)"
+                  class="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-950/60 border border-transparent hover:border-rose-500/30 transition-all"
+                  title="Sembunyikan / Hapus Campaign dari Tabel (agar tidak muncul otomatis)"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  v-else
+                  @click="handleUnhide(camp)"
+                  class="px-2 py-0.5 rounded text-[9px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 hover:bg-emerald-900 transition-all"
+                  title="Pulihkan Campaign ke Tabel Utama"
+                >
+                  Pulihkan
+                </button>
+              </td>
+
               <!-- NAMA CAMPAIGN -->
               <td class="p-3">
                 <div class="flex items-center gap-1.5">
@@ -235,6 +317,9 @@
                   </span>
                   <span class="font-bold text-white max-w-[200px] truncate" :title="camp.name">
                     {{ camp.name }}
+                  </span>
+                  <span v-if="isCampaignHidden(camp)" class="text-[8px] px-1 py-0.2 bg-amber-950 text-amber-300 border border-amber-500/30 font-bold">
+                    DIARSIPKAN
                   </span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
@@ -444,7 +529,7 @@
           <!-- Table Summary Footer -->
           <tfoot class="bg-dark-900/90 text-slate-300 border-t-2 border-cyan-500/40 text-[11px] font-bold">
             <tr>
-              <td colspan="2" class="p-3 uppercase text-cyan-300 tracking-wider">
+              <td colspan="3" class="p-3 uppercase text-cyan-300 tracking-wider">
                 TOTAL & RATA-RATA ({{ filteredCampaigns.length }} UNITS)
               </td>
               <td class="p-3 text-copper-300 font-mono">
@@ -518,9 +603,15 @@ import {
   RefreshCw, 
   Clock, 
   Settings, 
-  Search 
+  Search,
+  Zap,
+  Trash2,
+  Eye,
+  EyeOff,
+  RotateCcw
 } from 'lucide-vue-next';
 import { useMetaSync } from '../composables/useMetaSync';
+import { useSupabase } from '../composables/useSupabase';
 import { formatIDR, formatCompactIDR } from '../utils/currency';
 
 const props = defineProps({
@@ -550,9 +641,25 @@ const {
   toggleCampaignStatusOnMeta
 } = useMetaSync();
 
-// UI State
+// Hidden Campaigns Management via useSupabase
+const { 
+  hiddenCampaignIds, 
+  hideCampaign, 
+  unhideCampaign, 
+  unhideAllCampaigns 
+} = useSupabase();
+
+// UI Filter State
 const searchQuery = ref('');
 const statusFilter = ref('ALL');
+const filterOnlyActiveSpend = ref(false); // Toggle: Hanya Spend > 0
+const showHidden = ref(false); // Toggle: Lihat kampanye yang disembunyikan
+
+// Helper: Cek apakah campaign disembunyikan
+function isCampaignHidden(camp) {
+  return hiddenCampaignIds.value.has(String(camp.id)) || 
+         (camp.meta_campaign_id && hiddenCampaignIds.value.has(String(camp.meta_campaign_id)));
+}
 
 // Helpers: Check if campaign active
 function isCampaignActive(camp) {
@@ -569,6 +676,37 @@ function getPacingPct(camp) {
   const budget = camp.daily_budget || spend || 1;
   return Math.min(100, Math.round((spend / budget) * 100));
 }
+
+// Actions untuk Hide / Unhide
+const handleHide = (camp) => {
+  hideCampaign(camp.id);
+  if (camp.meta_campaign_id) hideCampaign(camp.meta_campaign_id);
+};
+
+const handleUnhide = (camp) => {
+  unhideCampaign(camp.id);
+  if (camp.meta_campaign_id) unhideCampaign(camp.meta_campaign_id);
+};
+
+const handleUnhideAll = () => {
+  unhideAllCampaigns();
+  showHidden.value = false;
+};
+
+// Sembunyikan semua campaign yang memiliki spend Rp 0
+const hideAllZeroSpendCampaigns = () => {
+  props.campaigns.forEach(c => {
+    if (getCampSpend(c) === 0) {
+      hideCampaign(c.id);
+      if (c.meta_campaign_id) hideCampaign(c.meta_campaign_id);
+    }
+  });
+};
+
+// Jumlah kampanye yang disembunyikan
+const hiddenCampaignsCount = computed(() => {
+  return props.campaigns.filter(c => isCampaignHidden(c)).length;
+});
 
 // Compute the 10 KPIs per campaign
 function calcMetrics(camp) {
@@ -628,10 +766,23 @@ function calcMetrics(camp) {
   };
 }
 
-// Filtered Campaigns
+// Filtered Campaigns (Menghilangkan yang di-hide dan filter Spend > 0)
 const filteredCampaigns = computed(() => {
   let list = [...props.campaigns];
 
+  // Saring berdasarkan status hidden
+  if (showHidden.value) {
+    list = list.filter(c => isCampaignHidden(c));
+  } else {
+    list = list.filter(c => !isCampaignHidden(c));
+  }
+
+  // Filter Hanya Spend > 0
+  if (filterOnlyActiveSpend.value && !showHidden.value) {
+    list = list.filter(c => getCampSpend(c) > 0);
+  }
+
+  // Search filter
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase();
     list = list.filter(c => 
@@ -640,6 +791,7 @@ const filteredCampaigns = computed(() => {
     );
   }
 
+  // Status Filter
   if (statusFilter.value === 'ACTIVE') {
     list = list.filter(c => isCampaignActive(c));
   } else if (statusFilter.value === 'PAUSED') {

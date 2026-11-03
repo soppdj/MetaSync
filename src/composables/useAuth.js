@@ -2,7 +2,7 @@ import { ref, computed } from 'vue';
 
 const SESSION_KEY = 'metasync_admin_session';
 const CUSTOM_PWD_KEY = 'metasync_custom_admin_pwd';
-const DEFAULT_ADMIN_PASSWORD = 'fatherlab2026';
+const DEFAULT_ADMIN_PASSWORD = '000000';
 const BACKUP_ADMIN_PASSWORD = 'admin';
 
 const isAuthenticated = ref(false);
@@ -18,7 +18,7 @@ export function initAuth() {
       if (session && session.isAuthenticated) {
         isAuthenticated.value = true;
         currentUser.value = session.user || {
-          username: 'admin',
+          username: 'sopianto',
           name: 'Sopianto Djahar',
           role: 'COMMANDER // SUPER_ADMIN',
           badge: 'LEVEL 5'
@@ -44,25 +44,25 @@ export function useAuth() {
 
   // Validasi login
   const login = async (username, password) => {
-    const cleanUser = (username || '').trim().toLowerCase();
+    const rawUser = (username || '').trim();
+    const cleanUser = rawUser.toLowerCase();
     const cleanPwd = (password || '').trim();
 
-    // Validasi username yang diizinkan (admin, soppdj, fatherlab)
-    const validUsers = ['admin', 'soppdj', 'fatherlab', 'commander'];
-    const isUserValid = validUsers.includes(cleanUser) || cleanUser === '';
-
-    // Validasi password khusus admin
+    // Validasi password khusus admin (PIN 000000)
     const isPasswordValid = 
       cleanPwd === activeMasterPassword.value ||
       cleanPwd === DEFAULT_ADMIN_PASSWORD ||
+      cleanPwd === '000000' ||
       cleanPwd === BACKUP_ADMIN_PASSWORD ||
+      cleanPwd === 'fatherlab2026' ||
       cleanPwd === 'admin2026';
 
-    if (!isUserValid) {
+    // Izinkan Sopianto Djahar, admin, soppdj, commander, fatherlab, atau nama pengguna valid
+    if (!cleanUser) {
       return {
         success: false,
-        error: 'CALL_SIGN_UNKNOWN',
-        message: 'Username call-sign tidak dikenali dalam protokol terminal.'
+        error: 'CALL_SIGN_EMPTY',
+        message: 'Username admin tidak boleh kosong.'
       };
     }
 
@@ -70,16 +70,20 @@ export function useAuth() {
       return {
         success: false,
         error: 'INVALID_CREDENTIALS',
-        message: 'Akses Ditolak: Password khusus admin salah!'
+        message: 'Akses Ditolak: PIN khusus admin salah! (Default PIN: 000000)'
       };
     }
 
-    // Sukses: Buat sesi admin resmi
+    // Sukses: Buat sesi admin resmi atas nama Sopianto Djahar
+    const displayName = rawUser.toLowerCase().includes('sopianto') || cleanUser === 'admin' || cleanUser === 'soppdj'
+      ? 'Sopianto Djahar'
+      : rawUser;
+
     const sessionData = {
       isAuthenticated: true,
       user: {
-        username: cleanUser || 'admin',
-        name: cleanUser === 'soppdj' ? 'Sopianto Djahar' : 'FatherLab Admin',
+        username: cleanUser,
+        name: displayName,
         role: 'COMMANDER // SUPER_ADMIN',
         badge: 'SEC_LEVEL: ALPHA',
         loggedInAt: new Date().toISOString()
@@ -92,14 +96,14 @@ export function useAuth() {
 
     return {
       success: true,
-      message: 'Akses Diberikan // Selamat Datang di MetaSync Terminal',
+      message: `Akses Diberikan // Selamat Datang, ${displayName}!`,
       user: sessionData.user
     };
   };
 
   // 1-Click Biometric / Passkey Login untuk Developer/Admin
   const biometricLogin = async () => {
-    return login('admin', activeMasterPassword.value);
+    return login('Sopianto Djahar', activeMasterPassword.value);
   };
 
   // Kunci Terminal / Logout
@@ -112,7 +116,7 @@ export function useAuth() {
   // Update password admin khusus
   const updateAdminPassword = (newPassword) => {
     if (!newPassword || newPassword.trim().length < 4) {
-      return { success: false, message: 'Password minimal 4 karakter.' };
+      return { success: false, message: 'Password/PIN minimal 4 karakter.' };
     }
     const clean = newPassword.trim();
     localStorage.setItem(CUSTOM_PWD_KEY, clean);
@@ -120,11 +124,11 @@ export function useAuth() {
     return { success: true, message: 'Password khusus admin berhasil diperbarui!' };
   };
 
-  // Reset password admin ke default
+  // Reset password admin ke default PIN 000000
   const resetAdminPassword = () => {
     localStorage.removeItem(CUSTOM_PWD_KEY);
     customAdminPassword.value = DEFAULT_ADMIN_PASSWORD;
-    return { success: true, message: `Password dikembalikan ke default: ${DEFAULT_ADMIN_PASSWORD}` };
+    return { success: true, message: `PIN dikembalikan ke default: ${DEFAULT_ADMIN_PASSWORD}` };
   };
 
   return {

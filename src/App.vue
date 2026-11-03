@@ -76,6 +76,9 @@
         <CreativeLeaderboard
           v-else-if="activeTab === 'leaderboard'"
           :assets="creativeAssets"
+          :is-syncing="isSyncing"
+          @trigger-sync="handleSync"
+          @open-settings="showSettingsModal = true"
         />
 
         <!-- TAB 5: CONTENT STUDIO (GEMINI PRO STREAMING) -->
@@ -148,6 +151,11 @@ const { isAuthenticated, currentUser, logout, updateAdminPassword } = useAuth();
 const {
   campaigns,
   creativeAssets,
+  hiddenCampaignIds,
+  hideCampaign,
+  unhideCampaign,
+  unhideAllCampaigns,
+  ingestLiveMetaCreatives,
   historicalChartData,
   fetchCampaigns,
   ingestLiveMetaCampaigns,
@@ -191,7 +199,12 @@ const handleLockTerminal = () => {
 const { isSyncing, lastSyncedAt, triggerSync } = useMetaSync((syncResult) => {
   if (syncResult?.campaigns && syncResult.campaigns.length > 0) {
     ingestLiveMetaCampaigns(syncResult.campaigns);
-    showToast(`✓ Berhasil memuat ${syncResult.campaigns.length} kampanye dari Meta Ads (${syncResult.account_id || ''})!`, 'success');
+  }
+  if (syncResult?.creatives && syncResult.creatives.length > 0) {
+    ingestLiveMetaCreatives(syncResult.creatives);
+  }
+  if (syncResult?.campaigns && syncResult.campaigns.length > 0) {
+    showToast(`✓ Berhasil memuat ${syncResult.campaigns.length} kampanye & ${syncResult.creatives?.length || 0} kreatif dari Meta Ads (${syncResult.account_id || ''})!`, 'success');
   } else {
     fetchCampaigns();
     showToast(`Sync Meta Graph API selesai: ${syncResult?.recordsProcessed || 0} data metrik termutakhir!`, 'info');
