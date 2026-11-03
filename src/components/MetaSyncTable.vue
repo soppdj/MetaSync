@@ -113,29 +113,6 @@
             <option value="scale2">Tahap 3: SCALE 2</option>
           </select>
 
-          <!-- Toggle: Hanya Spend > 0 -->
-          <button
-            type="button"
-            @click="filterOnlyActiveSpend = !filterOnlyActiveSpend"
-            class="px-2.5 py-1 text-xs font-bold border transition-all flex items-center gap-1.5"
-            :class="filterOnlyActiveSpend ? 'bg-copper-950 text-copper-300 border-copper-500/70 shadow-glow-copper' : 'bg-dark-900 text-slate-400 border-dark-750 hover:text-white'"
-            title="Sembunyikan campaign lama tanpa spend (Rp 0)"
-          >
-            <Zap class="w-3 h-3" :class="filterOnlyActiveSpend ? 'text-copper-400' : 'text-slate-500'" />
-            <span>{{ filterOnlyActiveSpend ? '⚡ Hanya Spend > 0' : 'Tampilkan Semua Spend' }}</span>
-          </button>
-
-          <!-- Sembunyikan Semua Rp 0 Permanen -->
-          <button
-            type="button"
-            @click="hideAllZeroSpendCampaigns"
-            class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-rose-300 bg-dark-900 hover:bg-rose-950/40 border border-dark-750 hover:border-rose-500/40 transition-all flex items-center gap-1"
-            title="Sembunyikan permanen seluruh campaign lama dengan Spend Rp 0"
-          >
-            <EyeOff class="w-3 h-3 text-slate-500" />
-            <span class="hidden sm:inline">Sembunyikan Semua Rp 0</span>
-          </button>
-
           <!-- View / Restore Hidden Campaigns Button -->
           <button
             v-if="hiddenCampaignsCount > 0"
@@ -163,10 +140,56 @@
           </button>
         </div>
 
-        <div class="flex items-center gap-2 text-[11px] text-slate-400">
-          <span>Menampilkan <strong>{{ filteredCampaigns.length }}</strong> Campaign</span>
-          <span>&bull;</span>
-          <span class="text-cyan-300 font-bold">10 KPI Target Validated</span>
+        <!-- Date Range & Period Selector (Preset & Custom - Sesuai Permintaan User) -->
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center gap-1.5 bg-dark-950 border border-cyan-500/40 px-2.5 py-1 rounded shadow-inner">
+            <Calendar class="w-3.5 h-3.5 text-cyan-400" />
+            <select
+              v-model="activeDatePreset"
+              @change="onDatePresetChange"
+              class="bg-transparent text-cyan-300 text-xs font-mono font-bold outline-none cursor-pointer"
+            >
+              <option value="today" class="bg-dark-950 text-white">Hari Ini</option>
+              <option value="yesterday" class="bg-dark-950 text-white">Kemarin</option>
+              <option value="last_7d" class="bg-dark-950 text-white">7 Hari Terakhir</option>
+              <option value="last_14d" class="bg-dark-950 text-white">14 Hari Terakhir</option>
+              <option value="last_30d" class="bg-dark-950 text-white">30 Hari Terakhir</option>
+              <option value="this_month" class="bg-dark-950 text-white">Bulan Ini</option>
+              <option value="last_month" class="bg-dark-950 text-white">Bulan Lalu</option>
+              <option value="maximum" class="bg-dark-950 text-white">Lifetime (Sepanjang Masa)</option>
+              <option value="custom" class="bg-dark-950 text-amber-400">📅 Periode Custom...</option>
+            </select>
+          </div>
+
+          <!-- Custom Date Range Picker (Jika 'custom' dipilih) -->
+          <div v-if="activeDatePreset === 'custom'" class="flex items-center gap-1.5 bg-dark-900 border border-copper-500/50 px-2 py-0.5 rounded">
+            <input
+              v-model="customSince"
+              type="date"
+              class="bg-dark-950 text-white text-[11px] font-mono px-1.5 py-0.5 border border-dark-750 focus:border-cyan-400 outline-none"
+              title="Tanggal Awal (Since)"
+            />
+            <span class="text-slate-400 text-xs">-</span>
+            <input
+              v-model="customUntil"
+              type="date"
+              class="bg-dark-950 text-white text-[11px] font-mono px-1.5 py-0.5 border border-dark-750 focus:border-cyan-400 outline-none"
+              title="Tanggal Akhir (Until)"
+            />
+            <button
+              type="button"
+              @click="applyCustomDateRange"
+              class="px-2 py-0.5 bg-copper-500 hover:bg-copper-400 text-dark-950 text-[10px] font-bold font-mono uppercase transition-all"
+            >
+              Terapkan
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400 pl-2">
+            <span>Menampilkan <strong>{{ filteredCampaigns.length }}</strong> Campaign</span>
+            <span>&bull;</span>
+            <span class="text-cyan-300 font-bold">10 KPI Target Validated</span>
+          </div>
         </div>
       </div>
 
@@ -183,52 +206,52 @@
           <!-- Table Header -->
           <thead class="bg-dark-900/95 text-slate-400 border-b border-dark-750 text-[10px] font-black uppercase tracking-wider sticky top-0 z-20">
             <tr>
-              <th class="p-3 text-center w-12">STATUS</th>
-              <th class="p-3 text-center w-10">AKSI</th>
-              <th class="p-3 min-w-[200px]">NAMA CAMPAIGN</th>
-              <th class="p-3 min-w-[130px]">SPEND (PACING)</th>
+              <th class="p-3 text-center w-12 whitespace-nowrap">STATUS</th>
+              <th class="p-3 text-center w-10 whitespace-nowrap">AKSI</th>
+              <th class="p-3 min-w-[200px] whitespace-nowrap">NAMA CAMPAIGN</th>
+              <th class="p-3 min-w-[130px] whitespace-nowrap">SPEND (PACING)</th>
 
               <!-- RESULT, VALUE, ROAS DISEBELAH SPEND -->
-              <th class="p-3 text-center min-w-[95px] bg-dark-850/80 text-emerald-300 border-l border-dark-800">
-                RESULT<br><span class="text-[8px] font-normal text-slate-400">Purchases</span>
+              <th class="p-3 text-center min-w-[95px] bg-dark-850/80 text-emerald-300 border-l border-dark-800 whitespace-nowrap font-mono text-[10px]">
+                RESULT (PURCHASE)
               </th>
-              <th class="p-3 text-center min-w-[125px] bg-dark-850/80 text-cyan-300">
-                VALUE<br><span class="text-[8px] font-normal text-slate-400">Gross Revenue</span>
+              <th class="p-3 text-center min-w-[125px] bg-dark-850/80 text-cyan-300 whitespace-nowrap font-mono text-[10px]">
+                VALUE (REVENUE)
               </th>
-              <th class="p-3 text-center min-w-[95px] bg-dark-850/80 text-copper-300">
-                ROAS<br><span class="text-[8px] font-normal text-slate-400">Return / Spend</span>
+              <th class="p-3 text-center min-w-[95px] bg-dark-850/80 text-copper-300 whitespace-nowrap font-mono text-[10px]">
+                ROAS (RETURN)
               </th>
               
-              <!-- 10 KPI BERURUTAN -->
-              <th class="p-3 text-center min-w-[95px] bg-cyan-950/20 text-cyan-300 border-l border-dark-800">
-                1. CTR<br><span class="text-[8px] font-normal text-slate-400">&gt; 2.0%</span>
+              <!-- 10 KPI BERURUTAN DALAM SATU BARIS TANPA PENOMORAN -->
+              <th class="p-3 text-center min-w-[95px] bg-cyan-950/20 text-cyan-300 border-l border-dark-800 whitespace-nowrap font-mono text-[10px]">
+                CTR (&gt;2.0%)
               </th>
-              <th class="p-3 text-center min-w-[100px] bg-cyan-950/20 text-cyan-300">
-                2. CPC<br><span class="text-[8px] font-normal text-slate-400">≤ 1% Harga</span>
+              <th class="p-3 text-center min-w-[100px] bg-cyan-950/20 text-cyan-300 whitespace-nowrap font-mono text-[10px]">
+                CPC (≤1%)
               </th>
-              <th class="p-3 text-center min-w-[100px] bg-cyan-950/20 text-cyan-300">
-                3. LC TO LPV<br><span class="text-[8px] font-normal text-slate-400">≥ 80%</span>
+              <th class="p-3 text-center min-w-[100px] bg-cyan-950/20 text-cyan-300 whitespace-nowrap font-mono text-[10px]">
+                LC TO LPV (≥80%)
               </th>
-              <th class="p-3 text-center min-w-[105px] bg-cyan-950/20 text-cyan-300">
-                4. COST LPV<br><span class="text-[8px] font-normal text-slate-400">≤ 2.5% Harga</span>
+              <th class="p-3 text-center min-w-[105px] bg-cyan-950/20 text-cyan-300 whitespace-nowrap font-mono text-[10px]">
+                COST LPV (≤2.5%)
               </th>
-              <th class="p-3 text-center min-w-[100px] bg-copper-950/20 text-copper-300 border-l border-dark-800">
-                5. CPM<br><span class="text-[8px] font-normal text-slate-400">≤ Rp 32.000</span>
+              <th class="p-3 text-center min-w-[100px] bg-copper-950/20 text-copper-300 border-l border-dark-800 whitespace-nowrap font-mono text-[10px]">
+                CPM (≤32k)
               </th>
-              <th class="p-3 text-center min-w-[105px] bg-copper-950/20 text-copper-300">
-                6. LPV TO ATC<br><span class="text-[8px] font-normal text-slate-400">≥ 40%</span>
+              <th class="p-3 text-center min-w-[105px] bg-copper-950/20 text-copper-300 whitespace-nowrap font-mono text-[10px]">
+                LPV TO ATC (≥40%)
               </th>
-              <th class="p-3 text-center min-w-[100px] bg-copper-950/20 text-copper-300">
-                7. ATC TO IC<br><span class="text-[8px] font-normal text-slate-400">≥ 30%</span>
+              <th class="p-3 text-center min-w-[100px] bg-copper-950/20 text-copper-300 whitespace-nowrap font-mono text-[10px]">
+                ATC TO IC (≥30%)
               </th>
-              <th class="p-3 text-center min-w-[115px] bg-emerald-950/20 text-emerald-300 border-l border-dark-800">
-                8. CPR<br><span class="text-[8px] font-normal text-slate-400">≤ 25% Harga</span>
+              <th class="p-3 text-center min-w-[115px] bg-emerald-950/20 text-emerald-300 border-l border-dark-800 whitespace-nowrap font-mono text-[10px]">
+                CPR (≤25%)
               </th>
-              <th class="p-3 text-center min-w-[110px] bg-emerald-950/20 text-emerald-300">
-                9. CLOSING RATE<br><span class="text-[8px] font-normal text-slate-400">≥ 82%</span>
+              <th class="p-3 text-center min-w-[110px] bg-emerald-950/20 text-emerald-300 whitespace-nowrap font-mono text-[10px]">
+                CLOSING RATE (≥82%)
               </th>
-              <th class="p-3 text-center min-w-[95px] bg-purple-950/20 text-purple-300 border-l border-dark-800">
-                10. FREQUENCY<br><span class="text-[8px] font-normal text-slate-400">&lt; 3.0</span>
+              <th class="p-3 text-center min-w-[95px] bg-purple-950/20 text-purple-300 border-l border-dark-800 whitespace-nowrap font-mono text-[10px]">
+                FREQUENCY (&lt;3.0)
               </th>
             </tr>
           </thead>
@@ -608,7 +631,8 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  RotateCcw
+  RotateCcw,
+  Calendar
 } from 'lucide-vue-next';
 import { useMetaSync } from '../composables/useMetaSync';
 import { useSupabase } from '../composables/useSupabase';
@@ -636,10 +660,30 @@ const {
   accountId,
   autoSyncInterval,
   countdown,
+  selectedDateRange,
+  customDateRange,
+  setDateRange,
   triggerSync,
   setPollingInterval,
   toggleCampaignStatusOnMeta
 } = useMetaSync();
+
+// Date Range Selection State
+const activeDatePreset = ref(selectedDateRange?.value || 'today');
+const customSince = ref(customDateRange?.value?.since || new Date().toISOString().split('T')[0]);
+const customUntil = ref(customDateRange?.value?.until || new Date().toISOString().split('T')[0]);
+
+const onDatePresetChange = () => {
+  if (activeDatePreset.value !== 'custom') {
+    setDateRange(activeDatePreset.value);
+  }
+};
+
+const applyCustomDateRange = () => {
+  if (customSince.value && customUntil.value) {
+    setDateRange('custom', { since: customSince.value, until: customUntil.value });
+  }
+};
 
 // Hidden Campaigns Management via useSupabase
 const { 

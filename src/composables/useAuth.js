@@ -2,7 +2,8 @@ import { ref, computed } from 'vue';
 
 const SESSION_KEY = 'metasync_admin_session';
 const CUSTOM_PWD_KEY = 'metasync_custom_admin_pwd';
-const DEFAULT_ADMIN_PASSWORD = '000000';
+const DEFAULT_ADMIN_PASSWORD = 'HgatKYu6%#k';
+const PIN_ADMIN_PASSWORD = '000000';
 const BACKUP_ADMIN_PASSWORD = 'admin';
 
 const isAuthenticated = ref(false);
@@ -48,11 +49,13 @@ export function useAuth() {
     const cleanUser = rawUser.toLowerCase();
     const cleanPwd = (password || '').trim();
 
-    // Validasi password khusus admin (PIN 000000)
+    // Validasi password khusus admin (Password privat 'HgatKYu6%#k' atau PIN '000000')
     const isPasswordValid = 
+      cleanPwd === 'HgatKYu6%#k' ||
+      cleanPwd === '000000' ||
       cleanPwd === activeMasterPassword.value ||
       cleanPwd === DEFAULT_ADMIN_PASSWORD ||
-      cleanPwd === '000000' ||
+      cleanPwd === PIN_ADMIN_PASSWORD ||
       cleanPwd === BACKUP_ADMIN_PASSWORD ||
       cleanPwd === 'fatherlab2026' ||
       cleanPwd === 'admin2026';
@@ -70,7 +73,7 @@ export function useAuth() {
       return {
         success: false,
         error: 'INVALID_CREDENTIALS',
-        message: 'Akses Ditolak: PIN khusus admin salah! (Default PIN: 000000)'
+        message: 'Akses Ditolak: Password atau PIN admin salah!'
       };
     }
 
@@ -101,7 +104,12 @@ export function useAuth() {
     };
   };
 
-  // 1-Click Biometric / Passkey Login untuk Developer/Admin
+  // 1-Click Login Cepat dengan PIN 000000
+  const pinLogin = async () => {
+    return login('Sopianto Djahar', '000000');
+  };
+
+  // Biometric / Passkey Login (Tetap didukung jika dibutuhkan)
   const biometricLogin = async () => {
     return login('Sopianto Djahar', activeMasterPassword.value);
   };
@@ -124,11 +132,11 @@ export function useAuth() {
     return { success: true, message: 'Password khusus admin berhasil diperbarui!' };
   };
 
-  // Reset password admin ke default PIN 000000
+  // Reset password admin ke default HgatKYu6%#k
   const resetAdminPassword = () => {
     localStorage.removeItem(CUSTOM_PWD_KEY);
     customAdminPassword.value = DEFAULT_ADMIN_PASSWORD;
-    return { success: true, message: `PIN dikembalikan ke default: ${DEFAULT_ADMIN_PASSWORD}` };
+    return { success: true, message: `Password dikembalikan ke default.` };
   };
 
   return {
@@ -137,6 +145,7 @@ export function useAuth() {
     activeMasterPassword,
     defaultAdminPassword: DEFAULT_ADMIN_PASSWORD,
     login,
+    pinLogin,
     biometricLogin,
     logout,
     updateAdminPassword,

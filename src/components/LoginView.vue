@@ -42,7 +42,6 @@
       <div class="space-y-1.5 border-l border-cyan-500/30 pl-3">
         <div class="text-cyan-400 font-bold tracking-widest">[ SYS_TELEMETRY ]</div>
         <div>HOST: <span class="text-slate-300">metasync.internal</span></div>
-        <div>IP_NODE: <span class="text-slate-300">10.240.18.92</span></div>
         <div>CIPHER: <span class="text-copper-400">AES-256-GCM / SHA384</span></div>
         <div>ENC_KEY: <span class="text-slate-400">0x8F9...B24</span></div>
         <div>TLS_SESSION: <span class="text-emerald-400">ACTIVE // TLS 1.3</span></div>
@@ -73,7 +72,7 @@
       </div>
     </div>
 
-    <!-- 4. Top Telemetry Bar -->
+    <!-- 4. Top Telemetry Bar (Tanpa Restricted Access Terminal) -->
     <header class="absolute top-0 left-0 right-0 h-10 border-b border-cyan-500/20 bg-[#060a14]/90 px-6 flex items-center justify-between z-20">
       <div class="flex items-center gap-3 text-xs">
         <span class="flex h-2 w-2 relative">
@@ -81,8 +80,6 @@
           <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
         </span>
         <span class="text-cyan-400 font-bold tracking-wider text-[11px]">METASYNC PROTOCOL v1.7.0</span>
-        <span class="text-slate-600">|</span>
-        <span class="text-slate-400 text-[10px] hidden sm:inline">[ RESTRICTED ACCESS TERMINAL ]</span>
       </div>
 
       <div class="flex items-center gap-4 text-xs">
@@ -182,7 +179,7 @@
         </div>
 
         <!-- ==========================================
-             FORM LOGIN (ADMIN & PIN KHUSUS ADMIN)
+             FORM LOGIN (ADMIN & PASSWORD PRIVAT)
              ========================================== -->
         <form @submit.prevent="handleFormSubmit" class="space-y-3.5">
           
@@ -207,7 +204,7 @@
             </div>
           </div>
 
-          <!-- Input 2: Password Khusus Admin (PIN: 000000) -->
+          <!-- Input 2: Password Khusus Admin (Kosong secara default demi privacy) -->
           <div class="space-y-1">
             <div class="flex items-center justify-between text-[11px]">
               <label class="text-slate-300 font-bold flex items-center gap-1.5">
@@ -231,7 +228,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 required
                 autocomplete="current-password"
-                placeholder="Masukkan PIN admin (000000)..."
+                placeholder="Masukkan password admin..."
                 @input="playKeySound"
                 :disabled="isAuthenticating || isUnlocked"
                 class="w-full px-3 py-2 bg-dark-900 border border-cyan-500/30 text-white text-xs font-mono tracking-wider focus:outline-none focus:border-copper-400 focus:shadow-glow-copper transition-all disabled:opacity-50 pr-10"
@@ -249,18 +246,18 @@
                   :class="[
                     password.length === 0 ? 'w-0' :
                     password.length < 4 ? 'w-1/4 bg-rose-500' :
-                    password.length < 6 ? 'w-2/4 bg-amber-500' :
+                    password.length < 8 ? 'w-2/4 bg-amber-500' :
                     'w-full bg-cyan-400'
                   ]"
                 ></div>
               </div>
               <span class="text-[9px] text-slate-500">
-                {{ password.length >= 6 ? 'ARMED' : password.length > 0 ? 'READY' : 'EMPTY' }}
+                {{ password.length >= 8 ? 'ARMED' : password.length > 0 ? 'READY' : 'EMPTY' }}
               </span>
             </div>
           </div>
 
-          <!-- Submit Button: OTORISASI AKSES -->
+          <!-- Submit Button: ENTER -->
           <button
             type="submit"
             :disabled="isAuthenticating || isUnlocked"
@@ -274,16 +271,16 @@
             <span>{{ buttonText }}</span>
           </button>
 
-          <!-- 1-Click Biometric / TouchID Passkey -->
+          <!-- Alternatif Cepat: Login dengan PIN 000000 -->
           <div class="pt-2 border-t border-cyan-500/15">
             <button
               type="button"
-              @click="handleBiometricAccess"
+              @click="handlePinAccess"
               :disabled="isAuthenticating || isUnlocked"
-              class="w-full py-1.5 px-3 bg-dark-900/90 hover:bg-dark-850 border border-dark-750 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 text-[11px] font-bold flex items-center justify-center gap-2 transition-all"
+              class="w-full py-1.5 px-3 bg-dark-900/90 hover:bg-dark-850 border border-dark-750 hover:border-cyan-500/50 text-slate-300 hover:text-cyan-300 text-[11px] font-bold flex items-center justify-center gap-2 transition-all font-mono"
             >
-              <Fingerprint class="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-              <span>⚡ Otorisasi Cepat via Biometrik (Passkey)</span>
+              <KeyRound class="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span>⚡ Login Cepat dengan PIN (000000)</span>
             </button>
           </div>
 
@@ -303,7 +300,7 @@
     </div>
 
     <!-- ==========================================
-         BOTTOM TELEMETRY STATUS BAR
+         BOTTOM TELEMETRY STATUS BAR (TANPA NAMA FOOTER)
          ========================================== -->
     <footer class="absolute bottom-0 left-0 right-0 h-8 border-t border-cyan-500/20 bg-[#060a14]/90 px-6 flex items-center justify-between text-[10px] text-slate-500 z-20">
       <div class="flex items-center gap-3">
@@ -317,7 +314,7 @@
 
       <div class="flex items-center gap-2">
         <span class="text-copper-400 font-bold">&copy; 2026 MetaSync</span>
-        <span class="hidden sm:inline text-slate-400">by FatherLab (Sopianto Djahar)</span>
+        <span class="hidden sm:inline text-slate-400">by FatherLab</span>
       </div>
     </footer>
 
@@ -337,19 +334,18 @@ import {
   Clock, 
   Volume2, 
   VolumeX, 
-  RefreshCw,
-  Fingerprint
+  RefreshCw
 } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
 import { cyberAudio } from '../utils/cyberAudio';
 
 const emit = defineEmits(['login-success']);
 
-const { login, biometricLogin, activeMasterPassword } = useAuth();
+const { login, pinLogin } = useAuth();
 
-// Form State: Otomatis terisi 'Sopianto Djahar' dan PIN default '000000'
+// Form State: Username terisi 'Sopianto Djahar', Password dikosongkan demi privacy
 const username = ref('Sopianto Djahar');
-const password = ref('000000');
+const password = ref('');
 const showPassword = ref(false);
 
 // UI Animation States
@@ -375,12 +371,12 @@ const updateClock = () => {
   currentTime.value = `${hours}:${minutes}:${seconds} WIB`;
 };
 
-// Computed Button Text
+// Computed Button Text: ENTER
 const buttonText = computed(() => {
   if (isUnlocked.value) return 'AKSES TERVERIFIKASI...';
-  if (isAuthenticating.value) return 'MEMVERIFIKASI PROTOKOL ENKRIPSI...';
-  if (authStatus.value === 'success') return 'AKSES DIBERIKAN // WELCOME';
-  return 'OTORISASI AKSES TERMINAL';
+  if (isAuthenticating.value) return 'MEMVERIFIKASI...';
+  if (authStatus.value === 'success') return 'WELCOME // MASUK';
+  return 'ENTER';
 });
 
 // Sound Helpers
@@ -392,14 +388,14 @@ const toggleAudio = () => {
   isMuted.value = cyberAudio.toggleMute();
 };
 
-// Submit Handler
+// Submit Handler (Form Submit dengan Password 'HgatKYu6%#k' atau custom)
 const handleFormSubmit = async () => {
   if (isAuthenticating.value || isUnlocked.value) return;
 
   cyberAudio.playClick();
   isAuthenticating.value = true;
   authStatus.value = 'authenticating';
-  statusMessage.value = '[ INITIALIZING HANDSHAKE... VERIFIKASI PIN ADMIN ]';
+  statusMessage.value = '[ INITIALIZING HANDSHAKE... VERIFIKASI KREDENSIAL ]';
 
   // Realistic Sci-Fi Delay (450ms)
   await new Promise(r => setTimeout(r, 450));
@@ -408,16 +404,16 @@ const handleFormSubmit = async () => {
 
   if (result.success) {
     authStatus.value = 'success';
-    statusMessage.value = `[ ACCESS GRANTED // WELCOME ${result.user?.name || 'SOPIANTO DJAHAR'} ]`;
+    statusMessage.value = `[ ACCESS GRANTED // WELCOME ${result.user?.name || 'ADMIN'} ]`;
     cyberAudio.playAccessGranted();
 
     // Transition smoothly
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 550));
     isUnlocked.value = true;
 
     setTimeout(() => {
       emit('login-success', result.user);
-    }, 500);
+    }, 450);
   } else {
     isAuthenticating.value = false;
     authStatus.value = 'error';
@@ -433,33 +429,33 @@ const handleFormSubmit = async () => {
   }
 };
 
-// 1-Click Biometric Access
-const handleBiometricAccess = async () => {
+// Cara Lain Login Cepat dengan PIN 000000
+const handlePinAccess = async () => {
   if (isAuthenticating.value || isUnlocked.value) return;
 
   cyberAudio.playClick();
   isAuthenticating.value = true;
   authStatus.value = 'authenticating';
-  statusMessage.value = '[ SCANNING BIOMETRIC PASSKEY... SOPIANTO DJAHAR MATCHED ]';
+  statusMessage.value = '[ LOGIN PIN OTOMATIS (000000)... ]';
 
-  await new Promise(r => setTimeout(r, 450));
-  const result = await biometricLogin();
+  await new Promise(r => setTimeout(r, 400));
+  const result = await pinLogin();
 
   if (result.success) {
     authStatus.value = 'success';
-    statusMessage.value = '[ BIOMETRIC MATCH 100% // ACCESS GRANTED ]';
+    statusMessage.value = '[ PIN MATCHED // ACCESS GRANTED ]';
     cyberAudio.playAccessGranted();
 
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 450));
     isUnlocked.value = true;
 
     setTimeout(() => {
       emit('login-success', result.user);
-    }, 500);
+    }, 450);
   } else {
     isAuthenticating.value = false;
     authStatus.value = 'error';
-    statusMessage.value = '[ BIOMETRIC VERIFICATION FAILED ]';
+    statusMessage.value = '[ VERIFIKASI PIN GAGAL ]';
     cyberAudio.playAccessDenied();
   }
 };

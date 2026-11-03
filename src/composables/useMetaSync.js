@@ -14,6 +14,14 @@ const autoSyncInterval = ref(Number(localStorage.getItem('metasync_poll_interval
 const countdown = ref(autoSyncInterval.value);
 const isRealtimeActive = ref(true);
 
+// Date Range Controls
+const selectedDateRange = ref(localStorage.getItem('metasync_date_preset') || 'today');
+const customDateRange = ref(JSON.parse(localStorage.getItem('metasync_custom_date') || '{"since":"","until":""}'));
+
+// Audience Regional & Platform Breakdown State
+const audienceRegions = ref(JSON.parse(localStorage.getItem('metasync_audience_regions') || '[]'));
+const platformBreakdown = ref(JSON.parse(localStorage.getItem('metasync_platform_breakdown') || '{"instagram":{"percentage":65,"spend":0,"impressions":0,"clicks":0,"purchases":0},"facebook":{"percentage":35,"spend":0,"impressions":0,"clicks":0,"purchases":0}}'));
+
 // Live Telemetry Event Logs
 const syncLogs = ref([
   {
@@ -41,7 +49,18 @@ export function useMetaSync(onSyncSuccess) {
     }
   };
 
-  const triggerSync = async () => {
+  const setDateRange = (preset, range = null) => {
+    selectedDateRange.value = preset;
+    localStorage.setItem('metasync_date_preset', preset);
+    if (range) {
+      customDateRange.value = range;
+      localStorage.setItem('metasync_custom_date', JSON.stringify(range));
+    }
+    addLog(`Rentang tanggal diubah ke: [${preset.toUpperCase()}]`, 'ACTION');
+    triggerSync({ datePreset: preset, timeRange: range || customDateRange.value });
+  };
+
+  const triggerSync = async (options = {}) => {
     if (isSyncing.value) return;
 
     isSyncing.value = true;
@@ -50,15 +69,17 @@ export function useMetaSync(onSyncSuccess) {
 
     const savedToken = localStorage.getItem('metasync_meta_token') || '';
     const savedAccount = localStorage.getItem('metasync_meta_account') || '';
+    const activePreset = options.datePreset || selectedDateRange.value;
+    const activeRange = options.timeRange || customDateRange.value;
 
     let successData = null;
 
     // 1. JIKA ADA KREDENSIAL META, JALANKAN DIRECT BROWSER-TO-META GRAPH v21.0 (CORS SUPPORTED)
     if (savedToken && savedAccount) {
       try {
-        addLog(`Menghubungkan ke Meta Graph API v21.0 (${savedAccount})...`, 'NETWORK');
+        addLog(`Menghubungkan ke Meta Graph API v21.0 (${savedAccount}) [${activePreset}]...`, 'NETWORK');
         // Direct browser client fetch (Paling responsif & tidak butuh serverless node)
-        successData = await fetchDirectMetaSync(savedToken, savedAccount);
+        successData = await fetchDirectMetaSync(savedToken, savedAccount, null, activePreset, activeRange);
         addLog(`Meta Graph sync live berhasil! ${successData.recordsProcessed || 0} unit telemetri termutakhir.`, 'SUCCESS');
       } catch (directErr) {
         console.warn('Direct Meta sync error, mencoba serverless fallback:', directErr);
@@ -70,7 +91,9 @@ export function useMetaSync(onSyncSuccess) {
             body: JSON.stringify({
               action: 'sync',
               metaToken: savedToken,
-              metaAccount: savedAccount
+              metaAccount: savedAccount,
+              datePreset: activePreset,
+              timeRange: activeRange
             })
           });
           if (response.ok) {
@@ -93,6 +116,16 @@ export function useMetaSync(onSyncSuccess) {
       accountId.value = successData.account_id || savedAccount;
       syncMessage.value = `Sinkronisasi live Meta berhasil (${successData.recordsProcessed || 0} records)`;
       
+      // Simpan audience breakdown jika ada
+      if (successData.audienceRegions && Array.isArray(successData.audienceRegions)) {
+        audienceRegions.value = successData.audienceRegions;
+        localStorage.setItem('metasync_audience_regions', JSON.stringify(successData.audienceRegions));
+      }
+      if (successData.platformBreakdown) {
+        platformBreakdown.value = successData.platformBreakdown;
+        localStorage.setItem('metasync_platform_breakdown', JSON.stringify(successData.platformBreakdown));
+      }
+
       syncListeners.forEach(listener => {
         try {
           listener(successData);
@@ -182,6 +215,11 @@ export function useMetaSync(onSyncSuccess) {
     countdown,
     isRealtimeActive,
     syncLogs,
+    selectedDateRange,
+    customDateRange,
+    audienceRegions,
+    platformBreakdown,
+    setDateRange,
     triggerSync,
     setPollingInterval,
     toggleCampaignStatusOnMeta
