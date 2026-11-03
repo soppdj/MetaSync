@@ -49,8 +49,8 @@
               <input
                 v-model.number="form.base_price"
                 type="number"
-                min="1000"
-                step="1000"
+                min="0"
+                step="any"
                 required
                 placeholder="149000"
                 class="w-full pl-10 pr-4 py-2 rounded-xl bg-dark-800 border border-dark-700 text-sm font-mono font-bold text-teal-300 focus:outline-none focus:border-brand-500"
@@ -69,7 +69,7 @@
                 v-model.number="form.cogs"
                 type="number"
                 min="0"
-                step="1000"
+                step="any"
                 required
                 placeholder="38000"
                 class="w-full pl-10 pr-4 py-2 rounded-xl bg-dark-800 border border-dark-700 text-sm font-mono font-bold text-slate-200 focus:outline-none focus:border-brand-500"
@@ -132,8 +132,8 @@
               <input
                 v-model.number="form.daily_budget"
                 type="number"
-                step="50000"
-                min="50000"
+                step="any"
+                min="0"
                 placeholder="500000"
                 class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700 text-sm font-mono font-bold text-white focus:outline-none focus:border-brand-500"
               />

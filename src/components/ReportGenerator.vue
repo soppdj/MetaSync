@@ -280,22 +280,40 @@
     <div v-else class="space-y-5">
       
       <!-- Flyer Action Bar -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-dark-900 border border-dark-800">
-        <!-- Time Filter -->
-        <div class="flex items-center gap-1 bg-dark-800 p-1 rounded-xl border border-dark-700">
-          <button
-            v-for="tf in timefilters"
-            :key="tf.id"
-            @click="selectedTimeframe = tf.id"
-            :class="[
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-              selectedTimeframe === tf.id
-                ? 'bg-gradient-to-r from-brand-600 to-teal-500 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            ]"
-          >
-            {{ tf.label }}
-          </button>
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl bg-dark-900 border border-dark-800">
+        <!-- Time Filter & Campaign Selection -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Time Filter -->
+          <div class="flex items-center gap-1 bg-dark-800 p-1 rounded-xl border border-dark-700">
+            <button
+              v-for="tf in timefilters"
+              :key="tf.id"
+              @click="selectedTimeframe = tf.id"
+              :class="[
+                'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                selectedTimeframe === tf.id
+                  ? 'bg-gradient-to-r from-brand-600 to-teal-500 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              ]"
+            >
+              {{ tf.label }}
+            </button>
+          </div>
+
+          <!-- Campaign Selector Dropdown -->
+          <div class="flex items-center gap-2 bg-dark-800 px-3 py-1.5 rounded-xl border border-dark-700">
+            <Layers class="w-4 h-4 text-teal-400" />
+            <span class="text-xs text-slate-400 font-medium">Pilih Campaign:</span>
+            <select 
+              v-model="selectedCampaignId"
+              class="bg-dark-900 border border-dark-700 text-xs font-bold text-teal-300 rounded-lg px-2.5 py-1 focus:outline-none focus:border-teal-400 max-w-[220px] truncate"
+            >
+              <option value="ALL">Semua Campaign (Total Akun)</option>
+              <option v-for="c in campaigns" :key="c.id" :value="c.id">
+                {{ c.name }}
+              </option>
+            </select>
+          </div>
         </div>
 
         <!-- Download PNG Button (Flyer = PNG) -->
@@ -329,10 +347,17 @@
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h1 class="text-xl font-extrabold tracking-tight text-white">MetaSync Performance Brief</h1>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">Official FatherLab</span>
+                  <h1 class="text-xl font-extrabold tracking-tight text-white">
+                    {{ selectedCampaignId === 'ALL' ? 'MetaSync Performance Brief' : selectedCampaignName }}
+                  </h1>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                    {{ selectedCampaignId === 'ALL' ? 'Official FatherLab' : 'Campaign Specific' }}
+                  </span>
                 </div>
-                <p class="text-xs text-slate-400">Periode: {{ currentPeriodLabel }} &bull; Generated: {{ reportDate }}</p>
+                <p class="text-xs text-slate-400">
+                  <span v-if="selectedCampaignId !== 'ALL'" class="text-teal-300 font-bold mr-1">🎯 Campaign: {{ selectedCampaignName }} &bull;</span>
+                  Periode: {{ currentPeriodLabel }} &bull; Generated: {{ reportDate }}
+                </p>
               </div>
             </div>
 
@@ -501,7 +526,7 @@
                 v-model.number="newRecord.revenue" 
                 type="number" 
                 min="0"
-                step="1000"
+                step="any"
                 required
                 placeholder="286000" 
                 class="w-full px-3.5 py-2 rounded-xl bg-dark-800 border border-dark-700 text-amber-300 font-mono font-bold focus:outline-none focus:border-teal-500"
@@ -514,7 +539,7 @@
                 v-model.number="newRecord.spend" 
                 type="number" 
                 min="0"
-                step="1000"
+                step="any"
                 required
                 placeholder="140000" 
                 class="w-full px-3.5 py-2 rounded-xl bg-dark-800 border border-dark-700 text-rose-300 font-mono font-bold focus:outline-none focus:border-teal-500"
@@ -575,7 +600,8 @@ import {
   Image, 
   Download, 
   PlusCircle, 
-  Trash2, 
+  Trash2,
+  Layers,
   X 
 } from 'lucide-vue-next';
 import html2canvas from 'html2canvas';
@@ -597,6 +623,16 @@ const printableTableRef = ref(null);
 const flyerRef = ref(null);
 const isExporting = ref(false);
 const showAddModal = ref(false);
+
+const selectedCampaignId = ref('ALL');
+
+const selectedCampaignName = computed(() => {
+  if (selectedCampaignId.value === 'ALL') {
+    return 'Semua Campaign (Total Konsolidasi)';
+  }
+  const c = props.campaigns.find(camp => String(camp.id) === String(selectedCampaignId.value));
+  return c ? c.name : 'Campaign Terpilih';
+});
 
 const selectedTimeframe = ref('today');
 const customDate = ref(new Date().toISOString().split('T')[0]);
@@ -751,7 +787,11 @@ const reportMetrics = computed(() => {
   let totalImpressions = 0;
   let totalCogs = 0;
 
-  props.campaigns.forEach(camp => {
+  const targetCampaigns = selectedCampaignId.value === 'ALL'
+    ? props.campaigns
+    : props.campaigns.filter(c => String(c.id) === String(selectedCampaignId.value));
+
+  targetCampaigns.forEach(camp => {
     (camp.adsets || []).forEach(ad => {
       const m = ad.metrics || {};
       const sp = (m.spend || 0) * multiplier;
@@ -848,7 +888,7 @@ const exportFlyerToPNG = async () => {
     });
 
     const link = document.createElement('a');
-    link.download = `MetaSync_Flyer_Executive_${Date.now()}.png`;
+    link.download = `MetaSync_Flyer_${selectedCampaignId.value === 'ALL' ? 'Semua_Campaign' : selectedCampaignName.value.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30)}_${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   } catch (err) {

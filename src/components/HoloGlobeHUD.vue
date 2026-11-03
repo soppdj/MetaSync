@@ -216,7 +216,7 @@
       <!-- ========================================================= -->
       <!-- Center Column: The 3D Holographic Globe Canvas (6 cols)  -->
       <!-- ========================================================= -->
-      <div class="lg:col-span-6 flex flex-col items-center justify-center relative min-h-[430px]">
+      <div class="lg:col-span-6 flex flex-col items-center justify-center relative min-h-[520px] sm:min-h-[560px]">
         
         <!-- Controls Bar: Zoom & Reset Indonesia Focus -->
         <div class="absolute top-0 right-2 z-20 flex items-center gap-1 bg-dark-950/90 border border-cyan-500/40 p-1 font-mono text-[10px] rounded shadow-glow-cyan">
@@ -249,7 +249,7 @@
         <!-- Orbital Decorative Reticles (SVG Background) -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
           <!-- Concentric Orbit Ring 1 (Rotating) -->
-          <svg class="w-[360px] h-[360px] sm:w-[410px] sm:h-[410px] animate-orbit opacity-40 text-cyan-400" viewBox="0 0 400 400">
+          <svg class="w-[420px] h-[420px] sm:w-[480px] sm:h-[480px] animate-orbit opacity-40 text-cyan-400" viewBox="0 0 400 400">
             <circle cx="200" cy="200" r="185" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="8 6" />
             <circle cx="200" cy="200" r="160" fill="none" stroke="currentColor" stroke-width="0.7" stroke-dasharray="3 15" />
             <text x="200" y="15" fill="currentColor" font-size="8" font-family="monospace" text-anchor="middle">0° NORTH</text>
@@ -259,13 +259,13 @@
           </svg>
 
           <!-- Counter-rotating Compass Ring -->
-          <svg class="w-[330px] h-[330px] sm:w-[380px] sm:h-[380px] animate-orbit-reverse opacity-30 text-copper-400" viewBox="0 0 360 360">
+          <svg class="w-[380px] h-[380px] sm:w-[440px] sm:h-[440px] animate-orbit-reverse opacity-30 text-copper-400" viewBox="0 0 360 360">
             <circle cx="180" cy="180" r="170" fill="none" stroke="currentColor" stroke-width="0.8" stroke-dasharray="12 24" />
             <circle cx="180" cy="180" r="145" fill="none" stroke="currentColor" stroke-width="0.5" />
           </svg>
 
           <!-- Static Crosshair Overlay -->
-          <div class="absolute w-[300px] h-[300px] border border-cyan-500/10 pointer-events-none">
+          <div class="absolute w-[360px] h-[360px] border border-cyan-500/10 pointer-events-none">
             <div class="absolute -top-1 -left-1 text-cyan-400 font-mono text-[9px] font-black">+</div>
             <div class="absolute -top-1 -right-1 text-cyan-400 font-mono text-[9px] font-black">+</div>
             <div class="absolute -bottom-1 -left-1 text-copper-400 font-mono text-[9px] font-black">+</div>
@@ -276,7 +276,7 @@
         <!-- Canvas for 3D Globe Projection (Fokus Peta Indonesia Besar) -->
         <canvas 
           ref="globeCanvas" 
-          class="relative z-10 w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] cursor-grab active:cursor-grabbing"
+          class="relative z-10 w-full max-w-[480px] sm:max-w-[540px] h-[460px] sm:h-[500px] cursor-grab active:cursor-grabbing"
           @mousedown="startDrag"
           @mousemove="onDrag"
           @mouseup="endDrag"
@@ -524,10 +524,10 @@ const ipLookupError = ref('');
 // Zoom Control
 const zoomLevel = ref(1.0);
 const zoomIn = () => {
-  zoomLevel.value = Math.min(2.0, zoomLevel.value + 0.2);
+  zoomLevel.value = Math.min(1.35, +(zoomLevel.value + 0.1).toFixed(2));
 };
 const zoomOut = () => {
-  zoomLevel.value = Math.max(0.7, zoomLevel.value - 0.2);
+  zoomLevel.value = Math.max(0.7, +(zoomLevel.value - 0.1).toFixed(2));
 };
 
 // Center of Indonesia: ~118°E, ~-2.5°S
@@ -800,18 +800,29 @@ onMounted(async () => {
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
 
-  const rect = canvas.getBoundingClientRect();
-  const width = rect.width || 380;
-  const height = rect.height || 380;
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  ctx.scale(dpr, dpr);
+  let width = 500;
+  let height = 500;
+
+  function resizeCanvas() {
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    width = rect.width || 500;
+    height = rect.height || 500;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
 
   let animTime = 0;
 
   function render() {
     animTime += 0.016;
-    const currentRadius = (width * 0.42) * zoomLevel.value;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const minDim = Math.min(width, height);
+    // Base radius 0.35 of minDim ensures the globe NEVER clips on zoom (max zoom 1.35 -> radius 0.4725 of height)
+    const currentRadius = (minDim * 0.35) * zoomLevel.value;
     const centerX = width / 2;
     const centerY = height / 2;
 
@@ -1074,5 +1085,6 @@ onUnmounted(() => {
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
   }
+  window.removeEventListener('resize', resizeCanvas);
 });
 </script>
