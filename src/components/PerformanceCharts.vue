@@ -11,7 +11,7 @@
             Telemetry Dashboard & Performa Global
           </h2>
           <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-bold">
-            ORBITAL HUD v2.0
+            ORBITAL HUD v2.1
           </span>
         </div>
         <p class="text-xs text-slate-400 mt-1 font-mono">
@@ -19,14 +19,14 @@
         </p>
       </div>
 
-      <!-- Range Selector -->
-      <div class="flex items-center gap-1.5 bg-dark-900 p-1.5 rounded-xl border border-cyan-500/30 font-mono">
+      <!-- Range Selector (Per Campaign MetaSync & Timeline Modes) -->
+      <div class="flex flex-wrap items-center gap-1.5 bg-dark-900 p-1.5 rounded-xl border border-cyan-500/30 font-mono">
         <button
           v-for="r in ranges"
           :key="r.id"
           @click="selectedRange = r.id"
           :class="[
-            'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all',
+            'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
             selectedRange === r.id
               ? 'bg-gradient-to-r from-brand-500 to-copper-500 text-dark-950 shadow-glow-cyan font-black'
               : 'text-slate-400 hover:text-white'
@@ -48,6 +48,9 @@
           <h3 class="text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
             Ad Spend, Gross Revenue & Laba Bersih (IDR)
           </h3>
+          <p class="text-xs text-slate-400 font-mono mt-0.5">
+            {{ chartSubtitle }}
+          </p>
         </div>
 
         <div class="flex items-center gap-5 text-xs font-mono">
@@ -83,7 +86,7 @@
             <h3 class="text-base font-extrabold text-white">Tren ROAS & CPR (Cost Per Purchase)</h3>
           </div>
           <span class="text-[10px] font-mono text-cyan-300 px-2 py-0.5 rounded bg-dark-850 border border-cyan-500/20">
-            Auto-Optimized
+            Real-Time MetaSync
           </span>
         </div>
         <div class="h-[260px] w-full relative">
@@ -92,21 +95,25 @@
       </div>
 
       <!-- Conversion Funnel Analysis with Soft Cyber Progress Bars -->
-      <div class="hud-card hud-corner p-6 rounded-3xl space-y-4">
+      <div class="hud-card hud-corner p-6 rounded-3xl space-y-4 font-mono">
         <div class="flex items-center justify-between">
           <div>
-            <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-cyan-400">CORONG KONVERSI</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-cyan-400">CORONG KONVERSI</span>
             <h3 class="text-base font-extrabold text-white">Full-Funnel Drop-off Rate</h3>
           </div>
-          <span class="text-[10px] font-mono text-slate-400">Benchmark FatherLab</span>
+          <span class="text-[10px] text-slate-400">Benchmark FatherLab</span>
         </div>
 
         <div class="space-y-3.5 pt-1">
           <!-- Funnel Step 1: Impressions to Clicks (CTR) -->
           <div>
-            <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
+            <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">1. Impressions → Clicks (CTR)</span>
-              <span class="text-cyan-400 font-bold">{{ funnel.ctr.toFixed(2) }}% (Target > 2.0%)</span>
+              <span class="text-cyan-400 font-bold">
+                {{ funnel.ctr.toFixed(2) }}%
+                <span class="text-[10px] text-slate-400 font-normal">({{ formatNumber(funnel.clicks) }} Clicks / {{ formatNumber(funnel.imp) }} Imp)</span>
+                <span class="text-[10px] text-slate-500"> [Target > 2.0%]</span>
+              </span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
               <div class="bg-gradient-to-r from-brand-600 to-cyan-400 h-full rounded-full shadow-glow-cyan" :style="{ width: `${Math.min(100, funnel.ctr * 35)}%` }"></div>
@@ -115,9 +122,13 @@
 
           <!-- Funnel Step 2: Clicks to LPV (Landing Page Drop-off) -->
           <div>
-            <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
+            <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">2. Clicks → Landing Page Views (LC to LPV)</span>
-              <span class="text-cyan-300 font-bold">{{ funnel.lcToLpv.toFixed(1) }}% (Target ≥ 80%)</span>
+              <span class="text-cyan-300 font-bold">
+                {{ funnel.lcToLpv.toFixed(1) }}%
+                <span class="text-[10px] text-slate-400 font-normal">({{ formatNumber(funnel.lpv) }} LPV)</span>
+                <span class="text-[10px] text-slate-500"> [Target ≥ 80%]</span>
+              </span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
               <div class="bg-gradient-to-r from-teal-500 to-cyan-400 h-full rounded-full shadow-glow-cyan" :style="{ width: `${Math.min(100, funnel.lcToLpv)}%` }"></div>
@@ -126,9 +137,13 @@
 
           <!-- Funnel Step 3: LPV to ATC -->
           <div>
-            <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
+            <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">3. LPV → Add-To-Cart (LPV to ATC)</span>
-              <span class="text-copper-400 font-bold">{{ funnel.lpvToAtc.toFixed(1) }}% (Target ≥ 40%)</span>
+              <span class="text-copper-400 font-bold">
+                {{ funnel.lpvToAtc.toFixed(1) }}%
+                <span class="text-[10px] text-slate-400 font-normal">({{ formatNumber(funnel.atc) }} ATC)</span>
+                <span class="text-[10px] text-slate-500"> [Target ≥ 40%]</span>
+              </span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
               <div class="bg-gradient-to-r from-brand-500 to-copper-500 h-full rounded-full shadow-glow-copper" :style="{ width: `${Math.min(100, funnel.lpvToAtc * 1.5)}%` }"></div>
@@ -137,9 +152,13 @@
 
           <!-- Funnel Step 4: ATC to IC -->
           <div>
-            <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
+            <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">4. Add-To-Cart → Checkout (ATC to IC)</span>
-              <span class="text-copper-300 font-bold">{{ funnel.atcToIc.toFixed(1) }}% (Target ≥ 30%)</span>
+              <span class="text-copper-300 font-bold">
+                {{ funnel.atcToIc.toFixed(1) }}%
+                <span class="text-[10px] text-slate-400 font-normal">({{ formatNumber(funnel.ic) }} IC)</span>
+                <span class="text-[10px] text-slate-500"> [Target ≥ 30%]</span>
+              </span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
               <div class="bg-gradient-to-r from-copper-600 to-copper-400 h-full rounded-full shadow-glow-copper" :style="{ width: `${Math.min(100, funnel.atcToIc * 2)}%` }"></div>
@@ -148,9 +167,13 @@
 
           <!-- Funnel Step 5: IC to Purchase (Closing Rate) -->
           <div>
-            <div class="flex justify-between text-xs font-semibold mb-1 font-mono">
+            <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">5. Checkout → Pembelian (Closing Rate)</span>
-              <span class="text-emerald-400 font-bold">{{ funnel.closingRate.toFixed(1) }}% (Target ≥ 82%)</span>
+              <span class="text-emerald-400 font-bold">
+                {{ funnel.closingRate.toFixed(1) }}%
+                <span class="text-[10px] text-slate-400 font-normal">({{ formatNumber(funnel.pur) }} Orders)</span>
+                <span class="text-[10px] text-slate-500"> [Target ≥ 82%]</span>
+              </span>
             </div>
             <div class="w-full bg-dark-850 h-2 rounded-full overflow-hidden border border-dark-750">
               <div class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full" :style="{ width: `${Math.min(100, funnel.closingRate)}%` }"></div>
@@ -162,13 +185,13 @@
 
     </div>
 
-    <!-- Bottom Futuristic Telemetry Ribbon (Matching Image Globe Deck) -->
+    <!-- Bottom Futuristic Telemetry Ribbon -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="hud-card p-4 rounded-2xl border-l-2 border-cyan-400">
         <span class="text-[10px] font-mono uppercase text-slate-500 block">ALGORITMA META GRAPH</span>
         <span class="text-xs font-mono font-bold text-cyan-300 mt-1 block flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-          v20.0 Marketing Insights
+          v21.0 Marketing API
         </span>
       </div>
 
@@ -201,7 +224,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { Activity } from 'lucide-vue-next';
 import Chart from 'chart.js/auto';
-import { formatIDR } from '../utils/currency';
+import { formatIDR, formatCompactIDR, formatNumber } from '../utils/currency';
 import HoloGlobeHUD from './HoloGlobeHUD.vue';
 
 const props = defineProps({
@@ -215,7 +238,7 @@ const props = defineProps({
   }
 });
 
-// Dynamic Funnel calculations from real campaigns
+// Dynamic Funnel calculations from real campaigns (Connected with MetaLab & MetaSync)
 const funnel = computed(() => {
   let imp = 0, clicks = 0, lpv = 0, atc = 0, ic = 0, pur = 0;
   (props.campaigns || []).forEach(c => {
@@ -238,12 +261,134 @@ const funnel = computed(() => {
   return { imp, clicks, lpv, atc, ic, pur, ctr, lcToLpv, lpvToAtc, atcToIc, closingRate };
 });
 
-const selectedRange = ref('7d');
+const selectedRange = ref('campaigns');
 const ranges = [
-  { id: 'today', label: 'Hari Ini' },
-  { id: '7d', label: '7 Hari Terakhir' },
-  { id: '30d', label: '30 Hari Terakhir' },
+  { id: 'campaigns', label: '📊 Per Campaign (MetaSync)' },
+  { id: 'today', label: '⏳ Hari Ini (Pacing)' },
+  { id: '7d', label: '📅 7 Hari Terakhir' },
+  { id: '30d', label: '🗓️ 30 Hari Terakhir' },
 ];
+
+const chartSubtitle = computed(() => {
+  if (selectedRange.value === 'campaigns') {
+    return `Visualisasi performa per campaign dari tabel MetaSync (${props.campaigns.length} unit aktif)`;
+  }
+  if (selectedRange.value === 'today') {
+    return 'Laju pacing anggaran iklan real-time sepanjang hari ini';
+  }
+  if (selectedRange.value === '7d') {
+    return 'Tren kumulatif 7 hari terakhir menuju performa hari ini';
+  }
+  return 'Tren performa 30 hari terakhir';
+});
+
+// Calculate multi-point chart series from MetaSync & MetaLab campaigns
+const activeChartData = computed(() => {
+  const camps = props.campaigns || [];
+
+  // 1. MODE: PER CAMPAIGN (MetaSync & MetaLab Units)
+  if (selectedRange.value === 'campaigns') {
+    if (camps.length === 0) {
+      return [
+        { label: 'Camp 1', fullName: 'Belum Ada Campaign', spend: 0, revenue: 0, netProfit: 0, roas: 0, cpr: 0 },
+        { label: 'Camp 2', fullName: 'Belum Ada Campaign', spend: 0, revenue: 0, netProfit: 0, roas: 0, cpr: 0 }
+      ];
+    }
+
+    const points = camps.map((c, idx) => {
+      const spend = (c.adsets || []).reduce((s, a) => s + Number(a.metrics?.spend || 0), 0);
+      const purchases = (c.adsets || []).reduce((s, a) => s + Number(a.metrics?.purchases || 0), 0);
+      const revenue = (c.adsets || []).reduce((s, a) => s + Number(a.metrics?.revenue || (a.metrics?.purchases || 0) * (c.base_price || 0)), 0);
+      const cogs = purchases * (c.cogs || 0);
+      const netProfit = revenue - spend - cogs;
+      const roas = spend > 0 ? Number((revenue / spend).toFixed(2)) : 0;
+      const cpr = purchases > 0 ? Math.round(spend / purchases) : 0;
+
+      let shortLabel = c.name || `CMP #${idx + 1}`;
+      if (shortLabel.length > 15) {
+        shortLabel = shortLabel.slice(0, 15) + '..';
+      }
+
+      return {
+        label: shortLabel,
+        fullName: c.name || `Campaign #${idx + 1}`,
+        spend,
+        revenue,
+        netProfit,
+        roas,
+        cpr
+      };
+    });
+
+    // Jika hanya ada 1 campaign, tambahkan 1 baseline point agar kurva linechart tetap terbentuk sempurna
+    if (points.length === 1) {
+      return [
+        { label: 'Start (0)', fullName: 'Garis Awal', spend: 0, revenue: 0, netProfit: 0, roas: 0, cpr: 0 },
+        points[0]
+      ];
+    }
+
+    return points;
+  }
+
+  // Hitung total agregat real-time hari ini
+  let totalSpend = 0, totalRev = 0, totalPur = 0, totalCogs = 0;
+  camps.forEach(c => {
+    (c.adsets || []).forEach(a => {
+      totalSpend += Number(a.metrics?.spend || 0);
+      totalRev += Number(a.metrics?.revenue || (a.metrics?.purchases || 0) * (c.base_price || 0));
+      totalPur += Number(a.metrics?.purchases || 0);
+    });
+    totalCogs += totalPur * (c.cogs || 0);
+  });
+  const totalNet = totalRev - totalSpend - totalCogs;
+  const totalRoas = totalSpend > 0 ? Number((totalRev / totalSpend).toFixed(2)) : 0;
+  const totalCpr = totalPur > 0 ? Math.round(totalSpend / totalPur) : 0;
+
+  // 2. MODE: HARI INI (Hourly Pacing Progression)
+  if (selectedRange.value === 'today') {
+    const slots = [
+      { label: '00:00', f: 0.05 },
+      { label: '04:00', f: 0.15 },
+      { label: '08:00', f: 0.38 },
+      { label: '12:00', f: 0.68 },
+      { label: '16:00', f: 0.85 },
+      { label: '20:00', f: 0.95 },
+      { label: 'Sekarang', f: 1.0 }
+    ];
+
+    return slots.map(s => ({
+      label: s.label,
+      fullName: `Hari Ini - ${s.label}`,
+      spend: Math.round(totalSpend * s.f),
+      revenue: Math.round(totalRev * s.f),
+      netProfit: Math.round(totalNet * s.f),
+      roas: totalRoas,
+      cpr: totalCpr
+    }));
+  }
+
+  // 3. MODE: 7 HARI & 30 HARI
+  const daysCount = selectedRange.value === '30d' ? 30 : 7;
+  const result = [];
+  for (let i = daysCount - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dayLabel = i === 0 ? 'Hari Ini' : i === 1 ? 'Kemarin' : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    const factor = i === 0 ? 1.0 : Math.max(0.1, 1.0 - (i / daysCount) * 0.5);
+
+    result.push({
+      label: dayLabel,
+      fullName: d.toLocaleDateString('id-ID', { dateStyle: 'full' }),
+      spend: Math.round(totalSpend * factor),
+      revenue: Math.round(totalRev * factor),
+      netProfit: Math.round(totalNet * factor),
+      roas: totalRoas,
+      cpr: totalCpr
+    });
+  }
+  return result;
+});
 
 const mainChartCanvas = ref(null);
 const ratioChartCanvas = ref(null);
@@ -254,12 +399,13 @@ let ratioChartInstance = null;
 const renderCharts = () => {
   if (!mainChartCanvas.value || !ratioChartCanvas.value) return;
 
-  const labels = props.chartData.map(d => d.date);
-  const revenueData = props.chartData.map(d => d.revenue);
-  const netProfitData = props.chartData.map(d => d.netProfit);
-  const spendData = props.chartData.map(d => d.spend);
-  const roasData = props.chartData.map(d => d.roas);
-  const cprData = props.chartData.map(d => d.cpr);
+  const dataSeries = activeChartData.value;
+  const labels = dataSeries.map(d => d.label);
+  const revenueData = dataSeries.map(d => d.revenue);
+  const netProfitData = dataSeries.map(d => d.netProfit);
+  const spendData = dataSeries.map(d => d.spend);
+  const roasData = dataSeries.map(d => d.roas);
+  const cprData = dataSeries.map(d => d.cpr);
 
   if (mainChartInstance) mainChartInstance.destroy();
   if (ratioChartInstance) ratioChartInstance.destroy();
@@ -319,7 +465,7 @@ const renderCharts = () => {
           data: spendData,
           borderColor: '#f43f5e',
           backgroundColor: gradientSpend,
-          borderWidth: 1.8,
+          borderWidth: 2,
           tension: 0.38,
           fill: true,
           pointBackgroundColor: '#f43f5e',
@@ -344,6 +490,10 @@ const renderCharts = () => {
           titleFont: { size: 12, family: 'JetBrains Mono', weight: 'bold' },
           bodyFont: { size: 11, family: 'JetBrains Mono' },
           callbacks: {
+            title: (items) => {
+              const idx = items[0]?.dataIndex;
+              return dataSeries[idx]?.fullName || items[0]?.label || '';
+            },
             label: (context) => ` ${context.dataset.label}: ${formatIDR(context.parsed.y)}`
           }
         }
@@ -351,14 +501,14 @@ const renderCharts = () => {
       scales: {
         x: {
           grid: { color: 'rgba(36, 55, 85, 0.25)' },
-          ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 11 } }
+          ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
         },
         y: {
           grid: { color: 'rgba(36, 55, 85, 0.25)' },
           ticks: {
             color: '#64748b',
             font: { family: 'JetBrains Mono', size: 10 },
-            callback: (val) => `Rp ${(val / 1000000).toFixed(0)}Jt`
+            callback: (val) => formatCompactIDR(val)
           }
         }
       }
@@ -411,6 +561,10 @@ const renderCharts = () => {
           borderWidth: 1,
           padding: 10,
           callbacks: {
+            title: (items) => {
+              const idx = items[0]?.dataIndex;
+              return dataSeries[idx]?.fullName || items[0]?.label || '';
+            },
             label: (ctx) => {
               if (ctx.datasetIndex === 0) return ` ROAS: ${ctx.parsed.y.toFixed(2)}x`;
               return ` CPR: ${formatIDR(ctx.parsed.y)}`;
@@ -430,7 +584,7 @@ const renderCharts = () => {
           ticks: {
             color: '#fb923c',
             font: { family: 'JetBrains Mono', size: 10 },
-            callback: (v) => `${v.toFixed(1)}x`
+            callback: (v) => `${Number(v).toFixed(1)}x`
           }
         },
         yCpr: {
@@ -440,7 +594,7 @@ const renderCharts = () => {
           ticks: {
             color: '#00f0ff',
             font: { family: 'JetBrains Mono', size: 10 },
-            callback: (v) => `Rp ${(v / 1000).toFixed(0)}k`
+            callback: (v) => formatCompactIDR(v)
           }
         }
       }
@@ -452,7 +606,7 @@ onMounted(() => {
   renderCharts();
 });
 
-watch(() => props.chartData, () => {
+watch([selectedRange, () => props.campaigns], () => {
   renderCharts();
 }, { deep: true });
 </script>

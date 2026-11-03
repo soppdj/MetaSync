@@ -1,44 +1,48 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 font-mono">
     <!-- Top KPI Overview Strip across stages (Soft Futuristic HUD) -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="hud-card hud-corner p-4.5 rounded-2xl flex items-center justify-between group">
-        <div>
-          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Total Spend Hari Ini</span>
-          <p class="text-xl font-extrabold font-mono text-copper-400 mt-1">{{ formatIDR(totalSpend) }}</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <!-- Card 1: Total Spend Hari Ini -->
+      <div class="hud-card hud-corner p-3.5 sm:p-4 rounded-xl flex items-center justify-between gap-3 min-w-0 overflow-hidden group">
+        <div class="min-w-0 flex-1">
+          <span class="text-[10px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-400 block truncate font-sans">Total Spend Hari Ini</span>
+          <p class="text-base sm:text-lg lg:text-xl font-extrabold text-copper-400 mt-0.5 truncate tracking-tight">{{ formatIDR(totalSpend) }}</p>
         </div>
-        <div class="p-3 rounded-xl bg-copper-500/10 text-copper-400 border border-copper-500/20 group-hover:shadow-glow-copper transition-all">
-          <DollarSign class="w-5 h-5" />
-        </div>
-      </div>
-
-      <div class="hud-card hud-corner p-4.5 rounded-2xl flex items-center justify-between group">
-        <div>
-          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Total Gross Revenue</span>
-          <p class="text-xl font-extrabold font-mono text-brand-300 mt-1">{{ formatIDR(totalRevenue) }}</p>
-        </div>
-        <div class="p-3 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 group-hover:shadow-glow-cyan transition-all">
-          <ShoppingBag class="w-5 h-5" />
+        <div class="p-2 sm:p-2.5 rounded-lg bg-copper-500/10 text-copper-400 border border-copper-500/20 group-hover:shadow-glow-copper transition-all shrink-0">
+          <DollarSign class="w-4 h-4 sm:w-4.5 sm:h-4.5" />
         </div>
       </div>
 
-      <div class="hud-card hud-corner p-4.5 rounded-2xl flex items-center justify-between group">
-        <div>
-          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Nett Profit Bersih</span>
-          <p class="text-xl font-extrabold font-mono text-emerald-400 mt-1">{{ formatIDR(totalNett) }}</p>
+      <!-- Card 2: Total Gross Revenue -->
+      <div class="hud-card hud-corner p-3.5 sm:p-4 rounded-xl flex items-center justify-between gap-3 min-w-0 overflow-hidden group">
+        <div class="min-w-0 flex-1">
+          <span class="text-[10px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-400 block truncate font-sans">Total Gross Revenue</span>
+          <p class="text-base sm:text-lg lg:text-xl font-extrabold text-brand-300 mt-0.5 truncate tracking-tight">{{ formatIDR(totalRevenue) }}</p>
         </div>
-        <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:shadow-glow-teal transition-all">
-          <TrendingUp class="w-5 h-5" />
+        <div class="p-2 sm:p-2.5 rounded-lg bg-brand-500/10 text-brand-400 border border-brand-500/20 group-hover:shadow-glow-cyan transition-all shrink-0">
+          <ShoppingBag class="w-4 h-4 sm:w-4.5 sm:h-4.5" />
         </div>
       </div>
 
-      <div class="hud-card hud-corner p-4.5 rounded-2xl flex items-center justify-between group">
-        <div>
-          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Average ROAS</span>
-          <p class="text-xl font-extrabold font-mono text-amber-300 mt-1">{{ overallRoas.toFixed(2) }}x</p>
+      <!-- Card 3: Nett Profit Bersih -->
+      <div class="hud-card hud-corner p-3.5 sm:p-4 rounded-xl flex items-center justify-between gap-3 min-w-0 overflow-hidden group">
+        <div class="min-w-0 flex-1">
+          <span class="text-[10px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-400 block truncate font-sans">Nett Profit Bersih</span>
+          <p class="text-base sm:text-lg lg:text-xl font-extrabold text-emerald-400 mt-0.5 truncate tracking-tight">{{ formatIDR(totalNett) }}</p>
         </div>
-        <div class="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:shadow-glow-amber transition-all">
-          <Flame class="w-5 h-5" />
+        <div class="p-2 sm:p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:shadow-glow-teal transition-all shrink-0">
+          <TrendingUp class="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+        </div>
+      </div>
+
+      <!-- Card 4: Average ROAS -->
+      <div class="hud-card hud-corner p-3.5 sm:p-4 rounded-xl flex items-center justify-between gap-3 min-w-0 overflow-hidden group">
+        <div class="min-w-0 flex-1">
+          <span class="text-[10px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-400 block truncate font-sans">Average ROAS</span>
+          <p class="text-base sm:text-lg lg:text-xl font-extrabold text-amber-300 mt-0.5 truncate tracking-tight">{{ overallRoas.toFixed(2) }}x</p>
+        </div>
+        <div class="p-2 sm:p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:shadow-glow-amber transition-all shrink-0">
+          <Flame class="w-4 h-4 sm:w-4.5 sm:h-4.5" />
         </div>
       </div>
     </div>
@@ -49,22 +53,22 @@
       <!-- KOLOM 1: TEST -->
       <div class="hud-panel p-4 flex flex-col gap-4 border-amber-500/30">
         <!-- Stage Header -->
-        <div class="p-3.5 bg-dark-900 border border-amber-500/40 flex items-center justify-between hud-corner">
-          <div class="flex items-center gap-3">
-            <div class="w-2.5 h-6 bg-amber-400 shadow-glow-amber"></div>
-            <div>
+        <div class="p-3 bg-dark-900 border border-amber-500/40 flex items-center justify-between gap-2.5 hud-corner min-w-0">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <div class="w-1.5 h-5 bg-amber-400 shadow-glow-amber shrink-0"></div>
+            <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <h2 class="text-xs font-mono font-black text-amber-300 tracking-wider">[ STAGE 01 // TEST ]</h2>
-                <span class="text-[10px] font-mono px-2 py-0.2 bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                <h2 class="text-xs sm:text-sm font-black text-amber-300 tracking-wider whitespace-nowrap">[ TEST ]</h2>
+                <span class="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 shrink-0 whitespace-nowrap">
                   {{ testCampaigns.length }} UNITS
                 </span>
               </div>
-              <p class="text-[10px] font-mono text-slate-400 mt-0.5">Mencari Winning Creative & Angle</p>
+              <p class="text-[10px] text-slate-400 mt-0.5 truncate">Mencari Winning Creative & Angle</p>
             </div>
           </div>
-          <div class="text-right">
-            <span class="text-[9px] uppercase font-bold text-slate-500 block font-mono">Total Spend</span>
-            <span class="text-xs font-mono font-bold text-copper-300">{{ formatCompactIDR(getStageSpend(testCampaigns)) }}</span>
+          <div class="text-right shrink-0">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Total Spend</span>
+            <span class="text-xs font-bold text-copper-300 whitespace-nowrap">{{ formatCompactIDR(getStageSpend(testCampaigns)) }}</span>
           </div>
         </div>
 
@@ -79,7 +83,7 @@
           />
           <div 
             v-if="testCampaigns.length === 0" 
-            class="h-44 border-2 border-dashed border-dark-800 rounded-lg flex flex-col items-center justify-center text-slate-500 text-xs gap-2 font-mono"
+            class="h-44 border-2 border-dashed border-dark-800 rounded-lg flex flex-col items-center justify-center text-slate-500 text-xs gap-2"
           >
             <span>Tidak ada campaign dalam tahap Test</span>
             <button 
@@ -95,22 +99,22 @@
       <!-- KOLOM 2: SCALE 1 -->
       <div class="hud-panel p-4 flex flex-col gap-4 border-cyan-500/30">
         <!-- Stage Header -->
-        <div class="p-3.5 bg-dark-900 border border-cyan-500/40 flex items-center justify-between hud-corner">
-          <div class="flex items-center gap-3">
-            <div class="w-2.5 h-6 bg-cyan-400 shadow-glow-cyan"></div>
-            <div>
+        <div class="p-3 bg-dark-900 border border-cyan-500/40 flex items-center justify-between gap-2.5 hud-corner min-w-0">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <div class="w-1.5 h-5 bg-cyan-400 shadow-glow-cyan shrink-0"></div>
+            <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <h2 class="text-xs font-mono font-black text-cyan-300 tracking-wider">[ STAGE 02 // SCALE 1 ]</h2>
-                <span class="text-[10px] font-mono px-2 py-0.2 bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30">
+                <h2 class="text-xs sm:text-sm font-black text-cyan-300 tracking-wider whitespace-nowrap">[ SCALE 1 ]</h2>
+                <span class="text-[10px] px-1.5 py-0.5 bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 shrink-0 whitespace-nowrap">
                   {{ scale1Campaigns.length }} UNITS
                 </span>
               </div>
-              <p class="text-[10px] font-mono text-slate-400 mt-0.5">Winning Ad Set & LLA Audiens</p>
+              <p class="text-[10px] text-slate-400 mt-0.5 truncate">Winning Ad Set & LLA Audiens</p>
             </div>
           </div>
-          <div class="text-right">
-            <span class="text-[9px] uppercase font-bold text-slate-500 block font-mono">Total Spend</span>
-            <span class="text-xs font-mono font-bold text-cyan-300">{{ formatCompactIDR(getStageSpend(scale1Campaigns)) }}</span>
+          <div class="text-right shrink-0">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Total Spend</span>
+            <span class="text-xs font-bold text-cyan-300 whitespace-nowrap">{{ formatCompactIDR(getStageSpend(scale1Campaigns)) }}</span>
           </div>
         </div>
 
@@ -125,7 +129,7 @@
           />
           <div 
             v-if="scale1Campaigns.length === 0" 
-            class="h-44 border-2 border-dashed border-dark-800 rounded-lg flex flex-col items-center justify-center text-slate-500 text-xs gap-2 font-mono"
+            class="h-44 border-2 border-dashed border-dark-800 rounded-lg flex flex-col items-center justify-center text-slate-500 text-xs gap-2"
           >
             <span>Belum ada campaign di Scale 1</span>
             <span class="text-[11px] text-slate-600">Promosikan dari Test jika CTR > 2% & CPR lolos target</span>
@@ -136,22 +140,22 @@
       <!-- KOLOM 3: SCALE 2 -->
       <div class="hud-panel p-4 flex flex-col gap-4 border-copper-500/30">
         <!-- Stage Header -->
-        <div class="p-3.5 bg-dark-900 border border-copper-500/40 flex items-center justify-between hud-corner">
-          <div class="flex items-center gap-3">
-            <div class="w-2.5 h-6 bg-copper-500 shadow-glow-copper"></div>
-            <div>
+        <div class="p-3 bg-dark-900 border border-copper-500/40 flex items-center justify-between gap-2.5 hud-corner min-w-0">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <div class="w-1.5 h-5 bg-copper-500 shadow-glow-copper shrink-0"></div>
+            <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <h2 class="text-xs font-mono font-black text-copper-300 tracking-wider">[ STAGE 03 // SCALE 2 ]</h2>
-                <span class="text-[10px] font-mono px-2 py-0.2 bg-copper-500/20 text-copper-300 font-bold border border-copper-500/30">
+                <h2 class="text-xs sm:text-sm font-black text-copper-300 tracking-wider whitespace-nowrap">[ SCALE 2 ]</h2>
+                <span class="text-[10px] px-1.5 py-0.5 bg-copper-500/20 text-copper-300 font-bold border border-copper-500/30 shrink-0 whitespace-nowrap">
                   {{ scale2Campaigns.length }} UNITS
                 </span>
               </div>
-              <p class="text-[10px] font-mono text-slate-400 mt-0.5">Final Scale & Injeksi Anggaran Penuh</p>
+              <p class="text-[10px] text-slate-400 mt-0.5 truncate">Final Scale & Injeksi Anggaran Penuh</p>
             </div>
           </div>
-          <div class="text-right">
-            <span class="text-[9px] uppercase font-bold text-slate-500 block font-mono">Total Spend</span>
-            <span class="text-xs font-mono font-bold text-copper-300">{{ formatCompactIDR(getStageSpend(scale2Campaigns)) }}</span>
+          <div class="text-right shrink-0">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Total Spend</span>
+            <span class="text-xs font-bold text-copper-300 whitespace-nowrap">{{ formatCompactIDR(getStageSpend(scale2Campaigns)) }}</span>
           </div>
         </div>
 
@@ -166,7 +170,7 @@
           />
           <div 
             v-if="scale2Campaigns.length === 0" 
-            class="h-44 border-2 border-dashed border-dark-800 rounded-lg flex flex-col items-center justify-center text-slate-500 text-xs gap-2 font-mono"
+            class="h-44 border-2 border-dashed border-dark-800 rounded-lg flex flex-col items-center justify-center text-slate-500 text-xs gap-2"
           >
             <span>Belum ada campaign di Scale 2</span>
             <span class="text-[11px] text-slate-600">Puncak scaling untuk campaign bervolume tinggi</span>
