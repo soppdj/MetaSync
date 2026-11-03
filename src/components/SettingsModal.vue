@@ -197,6 +197,14 @@
             <span class="text-[10px] text-slate-500 mt-1 block">Didapat dari Meta Business Manager &gt; Users &gt; System Users &gt; Generate Token.</span>
           </div>
 
+          <!-- Tips Bypass AdBlocker -->
+          <div class="p-3 rounded-xl bg-dark-900/80 border border-blue-500/20 text-[11px] text-slate-300 flex items-start gap-2">
+            <span class="text-blue-400 font-bold">ℹ️</span>
+            <div>
+              <span class="text-blue-300 font-bold">Anti-Blocker Protection:</span> Panggilan API dilengkapi reverse-proxy & backend relay otomatis untuk mencegah pemblokiran <i>Failed to fetch</i> akibat ekstensi AdBlocker browser (Brave Shields, uBlock Origin, AdGuard).
+            </div>
+          </div>
+
           <!-- Tombol Tes Koneksi Meta & Hasil -->
           <div class="pt-2 flex flex-col gap-2">
             <button
@@ -291,6 +299,49 @@
               <div class="space-y-0.5 flex-1">
                 <div class="font-bold">{{ testResults.telegram.message }}</div>
               </div>
+            </div>
+          </div>
+
+          <!-- Panduan Perintah 2-Way Bot & Webhook Setup -->
+          <div class="p-3 rounded-xl bg-dark-900/90 border border-cyan-500/20 text-[11px] space-y-2 mt-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-cyan-300 flex items-center gap-1.5">
+                <Terminal class="w-3.5 h-3.5 text-cyan-400" />
+                <span>2-Way Remote Command Bot:</span>
+              </span>
+              <span class="text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Live Listener Siap</span>
+              </span>
+            </div>
+
+            <div class="text-[10px] font-mono text-slate-300 space-y-1 bg-dark-950 p-2.5 rounded-lg border border-dark-800">
+              <div class="flex items-center justify-between">
+                <div><span class="text-cyan-400 font-bold">/status</span> <span class="text-slate-400">- Cek spend, omset, & ROAS hari ini</span></div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div><span class="text-cyan-400 font-bold">/rekap</span> <span class="text-slate-400">- Daftar status seluruh kampanye & adset</span></div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div><span class="text-rose-400 font-bold">/kill &lt;id&gt;</span> <span class="text-slate-400">- Hentikan adset seketika di Meta Ads</span></div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div><span class="text-cyan-400 font-bold">/help</span> <span class="text-slate-400">- Bantuan daftar perintah</span></div>
+              </div>
+            </div>
+
+            <div class="pt-1 flex items-center justify-between flex-wrap gap-2">
+              <span class="text-[10px] text-slate-400">Untuk Vercel / Mode Online Deployment:</span>
+              <button
+                type="button"
+                @click="runRegisterWebhook"
+                :disabled="webhookRegistering || !form.telegramToken"
+                class="px-2.5 py-1 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 hover:bg-cyan-900 transition-all font-mono flex items-center gap-1.5 disabled:opacity-40"
+              >
+                <RefreshCw v-if="webhookRegistering" class="w-3 h-3 animate-spin" />
+                <Zap v-else class="w-3 h-3 text-cyan-400" />
+                <span>{{ webhookStatus ? webhookStatus : 'Set Webhook URL ke Telegram' }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -439,7 +490,8 @@ import {
   Code,
   ShieldCheck,
   Eye,
-  EyeOff
+  EyeOff,
+  Terminal
 } from 'lucide-vue-next';
 import { useAuth } from '../composables/useAuth';
 import { 
@@ -449,6 +501,7 @@ import {
   testGeminiConnection 
 } from '../utils/integrationTester';
 import { SUPABASE_SCHEMA_SQL } from '../utils/supabaseSchemaCode';
+import { registerTelegramWebhook } from '../utils/telegramBotListener';
 
 const props = defineProps({
   initialSettings: {
@@ -557,6 +610,30 @@ const runTestGemini = async () => {
     testResults.value.gemini = res;
   } finally {
     testingState.value.gemini = false;
+  }
+};
+
+// 5. Register Webhook URL to Telegram Server (for Vercel Online Deployments)
+const webhookRegistering = ref(false);
+const webhookStatus = ref('');
+
+const runRegisterWebhook = async () => {
+  if (!form.value.telegramToken) return;
+  webhookRegistering.value = true;
+  webhookStatus.value = '';
+  try {
+    const res = await registerTelegramWebhook(form.value.telegramToken, window.location.origin);
+    webhookStatus.value = '✓ Webhook Telegram Aktif!';
+    setTimeout(() => {
+      webhookStatus.value = '';
+    }, 4000);
+  } catch (err) {
+    webhookStatus.value = `Gagal: ${err.message}`;
+    setTimeout(() => {
+      webhookStatus.value = '';
+    }, 5000);
+  } finally {
+    webhookRegistering.value = false;
   }
 };
 

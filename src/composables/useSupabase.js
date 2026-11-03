@@ -31,7 +31,13 @@ export function getSupabaseClient() {
 }
 
 export function useSupabase() {
-  const campaigns = ref(JSON.parse(localStorage.getItem('metasync_campaigns_cache') || 'null') || INITIAL_CAMPAIGNS);
+  const cachedCampaigns = localStorage.getItem('metasync_campaigns_cache');
+  if (!cachedCampaigns) {
+    try {
+      localStorage.setItem('metasync_campaigns_cache', JSON.stringify(INITIAL_CAMPAIGNS));
+    } catch (e) {}
+  }
+  const campaigns = ref(JSON.parse(cachedCampaigns || 'null') || INITIAL_CAMPAIGNS);
   const creativeAssets = ref(INITIAL_CREATIVE_ASSETS);
   const isConnected = ref(Boolean(supabaseUrl.value && supabaseKey.value));
   const isLoading = ref(false);

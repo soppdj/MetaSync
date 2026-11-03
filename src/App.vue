@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import LoginView from './components/LoginView.vue';
 import Header from './components/Header.vue';
 import PerformanceCharts from './components/PerformanceCharts.vue';
@@ -134,6 +134,7 @@ import DataProtectionModal from './components/DataProtectionModal.vue';
 import { useSupabase } from './composables/useSupabase';
 import { useMetaSync } from './composables/useMetaSync';
 import { useAuth } from './composables/useAuth';
+import { startTelegramPolling, stopTelegramPolling } from './utils/telegramBotListener';
 
 const activeTab = ref('dashboard');
 const showCreateModal = ref(false);
@@ -257,6 +258,29 @@ const handleCreateCampaign = async (newCampData) => {
   showToast(`Campaign baru "${newCampData.name}" berhasil dibuat dengan target KPI dinamis!`, 'success');
 };
 
+// Telegram Autonomous Command Listener
+const initTelegramBotListener = () => {
+  const settings = getSavedSettings();
+  if (settings.telegramToken) {
+    stopTelegramPolling();
+    startTelegramPolling(settings.telegramToken, (killedAdsetId) => {
+      let found = false;
+      for (const camp of campaigns.value) {
+        const adset = (camp.adsets || []).find(a => a.id === killedAdsetId || a.meta_adset_id === killedAdsetId);
+        if (adset) {
+          pauseAdset(camp.id, adset.id);
+          showToast(`🚨 Telegram Command: AdSet "${adset.name || killedAdsetId}" berhasil di-KILL (PAUSED)!`, 'danger');
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        showToast(`Telegram Command: AdSet ID ${killedAdsetId} dihentikan via Meta API.`, 'info');
+      }
+    });
+  }
+};
+
 // Save Settings
 const handleSaveSettings = (config) => {
   if (config.adminPassword) {
@@ -266,6 +290,7 @@ const handleSaveSettings = (config) => {
   showSettingsModal.value = false;
   showToast('Konfigurasi API Keys dan Password Admin berhasil disimpan!', 'success');
   fetchCampaigns();
+  initTelegramBotListener();
   if (config.metaToken && config.metaAccount) {
     handleSync();
   }
@@ -281,5 +306,10 @@ onMounted(() => {
   if (isAuthenticated.value) {
     fetchCampaigns();
   }
+  initTelegramBotListener();
+});
+
+onUnmounted(() => {
+  stopTelegramPolling();
 });
 </script>

@@ -4,6 +4,7 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -13,6 +14,15 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    proxy: {
+      // Local dev proxy to Meta Graph API v21.0 to bypass browser ad blockers
+      '/api/meta-proxy': {
+        target: 'https://graph.facebook.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/meta-proxy/, ''),
+        secure: true
+      }
+    }
   },
   build: {
     outDir: 'dist',

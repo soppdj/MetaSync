@@ -1,5 +1,5 @@
 // src/utils/integrationTester.js
-// Diagnostik dan Penguji Koneksi Langsung untuk Supabase, Meta Graph API, Telegram, dan Gemini
+// Diagnostik dan Penguji Koneksi Langsung untuk Supabase, Meta Graph API v21.0, Telegram, dan Gemini
 import { createClient } from '@supabase/supabase-js';
 
 export async function testSupabaseConnection(url, anonKey) {
@@ -64,6 +64,65 @@ export async function testMetaConnection(adAccountId, accessToken) {
   }
   const cleanToken = accessToken.trim();
 
+  // 1. Coba lewat Serverless Proxy /api/sync-meta (Aman 100% dari AdBlocker browser)
+  try {
+    const srvRes = await fetch('/api/sync-meta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'test_meta',
+        metaAccount: cleanAccount,
+        metaToken: cleanToken
+      })
+    });
+    
+    if (srvRes.status < 500) {
+      const srvData = await srvRes.json();
+      if (srvData.success) {
+        return {
+          success: true,
+          accountName: srvData.accountName,
+          currency: srvData.currency,
+          message: `✓ Terhubung ke Meta Ads via Backend! Akun: "${srvData.accountName}" (${srvData.currency}) • Status: AKTIF`
+        };
+      } else if (srvData.error) {
+        return {
+          success: false,
+          message: `Gagal dari Meta API: ${srvData.error}`
+        };
+      }
+    }
+  } catch (e) {
+    // Lanjut ke proxy lokal / proxy vercel
+  }
+
+  // 2. Coba lewat Reverse Proxy (/api/meta-proxy/v21.0/...)
+  try {
+    const proxyUrl = `/api/meta-proxy/v21.0/${cleanAccount}?fields=name,account_status,currency,amount_spent,timezone_name&access_token=${cleanToken}`;
+    const proxyRes = await fetch(proxyUrl);
+    
+    if (proxyRes.status < 500) {
+      const proxyData = await proxyRes.json();
+      if (proxyData.error) {
+        return {
+          success: false,
+          message: `Gagal dari Meta API: ${proxyData.error.message} (Tipe: ${proxyData.error.type || 'OAuth'})`
+        };
+      }
+      if (proxyData.name) {
+        return {
+          success: true,
+          accountName: proxyData.name,
+          currency: proxyData.currency,
+          message: `✓ Terhubung ke Meta Ads via Proxy! Akun: "${proxyData.name}" (${proxyData.currency}) • Status: AKTIF`
+        };
+      }
+    }
+  } catch (e) {
+    // Lanjut ke direct fetch
+  }
+
+  // 3. Direct Fetch ke graph.facebook.com v21.0
   try {
     const url = `https://graph.facebook.com/v21.0/${cleanAccount}?fields=name,account_status,currency,amount_spent,timezone_name&access_token=${cleanToken}`;
     const res = await fetch(url);
@@ -99,6 +158,14 @@ export async function testMetaConnection(adAccountId, accessToken) {
       message: `✓ Terhubung ke Meta Ads! Akun: "${data.name}" (${data.currency}) • Status: ${statusLabel}`
     };
   } catch (err) {
+    // Tangani deteksi AdBlocker browser (Brave Shields, uBlock, AdGuard)
+    if (err.message?.includes('Failed to fetch') || err.name === 'TypeError') {
+      return {
+        success: false,
+        isAdBlocker: true,
+        message: 'Gagal menghubungi Meta Graph API (Failed to fetch). Request ke graph.facebook.com diblokir oleh AdBlocker browser (Brave Shields / uBlock Origin / AdGuard). Silakan matikan AdBlocker untuk halaman ini agar Meta Ads dapat tersambung langsung.'
+      };
+    }
     return {
       success: false,
       message: `Gagal menghubungi Meta Graph API: ${err.message}`

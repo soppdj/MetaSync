@@ -1,9 +1,9 @@
 # MASTER PROMPT & ARSITEKTUR SISTEM: METASYNC BY FATHERLAB
-> **Versi Dokumen:** 1.7.1  
+> **Versi Dokumen:** 1.7.2  
 > **Terakhir Diperbarui:** 3 November 2026
 > **Author & Brand:** FatherLab (Sopianto Djahar)  
 > **Repository GitHub:** [https://github.com/soppdj/MetaSync](https://github.com/soppdj/MetaSync)  
-> **Status Sistem:** `metagraph live` (Meta Marketing Graph API v20.0 • Supabase Live • Sentinel Active)  
+> **Status Sistem:** `metagraph live` (Meta Marketing Graph API v21.0 • Supabase Live • 2-Way Telegram Active • Sentinel Active)  
 > **Target Platform:** Desktop-Optimized Progressive Web Application (PWA)
 
 ---
@@ -330,6 +330,7 @@ CREATE TABLE IF NOT EXISTS report_ledger (
 | **v1.6.2** | 02 Nov 2026 | User Request | Migrasi & publikasi repositori resmi ke GitHub (https://github.com/soppdj/MetaSync). Konfigurasi proteksi privasi zero-leakage via .gitignore (mengabaikan .env*, node_modules, backup data), sinkronisasi branch main, dan dokumentasi .env.example. |
 | **v1.7.0** | 02 Nov 2026 | User Request | Pembuatan **Animated Sci-Fi Login UI Terminal (`LoginView.vue`)** & **Password Khusus Admin (`useAuth.js`)**: Dilengkapi orbit HUD telemetri konsentris berputar, sapuan radar 360°, efek audio synthesizer Web Audio API (`cyberAudio.js`), verifikasi password khusus admin (`fatherlab2026` / `admin`), 1-klik biometrik passkey, animasi getar jika salah (cyber-shake), status dekripsi handshake, serta tombol Kunci Terminal (Logout) di Header. |
 | **v1.7.1** | 03 Nov 2026 | User Request | Perbaikan komprehensif seluruh integrasi & Supabase Master SQL Schema: Penyediaan file `supabase/schema.sql` siap eksekusi di SQL Editor (lengkap RLS permisif untuk anon key, Realtime, indexes, seed data), penambahan tombol diagnosa & tes koneksi langsung di antarmuka Settings (`SettingsModal.vue`) untuk Supabase, Meta Ads Graph v21.0, Telegram Bot, dan Gemini AI, serta implementasi mesin direct browser-to-Meta sync (`metaApi.js`) dan Gemini fallback streaming (`geminiClient.js`). |
+| **v1.7.2** | 03 Nov 2026 | User Request | Perbaikan Layar Putih Online (Vercel Blank Screen), Bypass AdBlocker Meta Ads, & Engine Telegram 2-Way Command: (1) Memperbaiki rewrite `vercel.json` dan PWA `sw.js` (Network-First) agar bundle JS statis tidak tertimpa HTML di production online; (2) Mengimplementasikan serverless relay & reverse proxy (`/api/meta-proxy` dan `/api/sync-meta`) untuk bypass error `Failed to fetch` akibat ekstensi AdBlocker (Brave Shields, uBlock, AdGuard) pada Meta Graph API v21.0; (3) Mengaktifkan autonomous 2-way Telegram command engine (`telegramBotListener.js`) dengan long-polling dan 1-click webhook registrar di `SettingsModal.vue` untuk perintah `/status`, `/rekap`, `/kill <id>`, `/ping`, dan `/help`; (4) Memastikan Master SQL Schema Supabase selalu tersinkronisasi otomatis di repositori GitHub. |
 
 ---
 

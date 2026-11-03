@@ -3,11 +3,11 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/meta-proxy/(.*)",
+      "destination": "https://graph.facebook.com/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/|favicon\\.svg|manifest\\.json|sw\\.js|api/).*)",
       "destination": "/index.html"
     }
   ]
